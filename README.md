@@ -1,16 +1,40 @@
-# React + Vite
+# ProfissionalHub — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Plataforma de gestão da rotina de profissionais de Educação Física autônomos.
 
-Currently, two official plugins are available:
+## Estado atual
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Estrutura inicial em React e JavaScript, com Vite e ESLint. A página inicial é provisória; autenticação, rotas, módulos e integração Geoapify ainda não estão implementados. Não representa a conclusão da Fase 1.
 
-## React Compiler
+## Executar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Validado com Node.js 24.15.0 e npm 11.12.1.
 
-## Expanding the Oxlint configuration
+```bash
+npm ci
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Use o endereço informado pelo Vite.
+
+## Comandos
+
+- `npm run dev`: desenvolvimento.
+- `npm run lint`: análise estática com ESLint.
+- `npm run build`: build em `dist/`.
+- `npm run preview`: visualizar o build localmente.
+
+## Estrutura
+
+- `src/components`: pasta por componente, com JSX e CSS.
+- `src/utils`: funções auxiliares e futuros módulos de API.
+- `src/contexts`: contexto de autenticação a implementar.
+- `src/images` e `src/vendor`: imagens, fontes e recursos.
+
+## Escopo aprovado
+
+Alunos, agenda individual, sessões, reposições autorizadas manualmente, cobranças com quitação integral e painel operacional. Geoapify para explorar locais e consultar deslocamentos em São Paulo, com GET e POST.
+
+## Desenvolvimento
+
+Branch `stage-react-api`, com futura pull request para `main`. Publicação no GitHub e deploy ainda pendentes. Não versionar chaves, tokens ou arquivos `.env`. Nenhuma chave Geoapify foi copiada para este projeto.
