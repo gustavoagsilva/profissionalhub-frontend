@@ -1,0 +1,16 @@
+.apresentacao__cabecalho {
+  height: 98px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.apresentacao__navegacao {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  font-size: 13px;
+}
+.apresentacao__navegacao a {
+  color: var(--muted);
+}

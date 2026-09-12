@@ -1,0 +1,19 @@
+.sobre {
+  background: #ecf0e5;
+  border-radius: 20px;
+  padding: 36px;
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  margin-bottom: 55px;
+}
+.sobre > div {
+  flex: 1;
+}
+.sobre h2 {
+  font-size: 24px;
+  margin: 14px 0;
+}
+.sobre .botao {
+  flex: none;
+}
