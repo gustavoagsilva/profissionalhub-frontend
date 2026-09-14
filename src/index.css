@@ -1,7 +1,238 @@
-:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1e3029; background: #f7f9f6; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
-a { transition: opacity 150ms ease; }
-a:hover { opacity: 0.8; }
-a:focus-visible { outline: 3px solid #25846a; outline-offset: 5px; }
-@media (prefers-reduced-motion: reduce) { a { transition: none; } }
+@font-face {
+  font-family: Manrope;
+  src:
+    url("@fontsource/manrope/files/manrope-latin-400-normal.woff2")
+      format("woff2"),
+    url("@fontsource/manrope/files/manrope-latin-400-normal.woff")
+      format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Manrope;
+  src:
+    url("@fontsource/manrope/files/manrope-latin-500-normal.woff2")
+      format("woff2"),
+    url("@fontsource/manrope/files/manrope-latin-500-normal.woff")
+      format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Manrope;
+  src:
+    url("@fontsource/manrope/files/manrope-latin-600-normal.woff2")
+      format("woff2"),
+    url("@fontsource/manrope/files/manrope-latin-600-normal.woff")
+      format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Manrope;
+  src:
+    url("@fontsource/manrope/files/manrope-latin-700-normal.woff2")
+      format("woff2"),
+    url("@fontsource/manrope/files/manrope-latin-700-normal.woff")
+      format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  font-family: Manrope, system-ui, sans-serif;
+  color: #28372b;
+  background: #f7f8f3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --ink: #28372b;
+  --muted: #798173;
+  --green: #486338;
+  --sage: #eaf0e1;
+  --white: #fffefa;
+  --line: #e7e9df;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+button,
+a {
+  transition:
+    background-color 150ms,
+    color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #96ae78;
+  outline-offset: 3px;
+}
+input,
+select {
+  min-width: 0;
+}
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: break-word;
+}
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  min-height: 44px;
+  text-align: center;
+}
+.botao--principal {
+  background: var(--green);
+  color: white;
+}
+.botao--principal:hover:not(:disabled) {
+  background: #344d27;
+  box-shadow: 0 4px 15px #48633820;
+}
+.botao--contorno {
+  background: transparent;
+  border-color: #d9dfd0;
+  color: var(--green);
+}
+.botao--contorno:hover:not(:disabled) {
+  background: var(--sage);
+}
+.botao--simples {
+  background: transparent;
+  color: var(--ink);
+}
+.botao--simples:hover {
+  background: var(--sage);
+}
+.botao--pequeno {
+  padding: 9px 12px;
+  font-size: 10px;
+  min-height: 36px;
+}
+.botao--largura-total {
+  width: 100%;
+}
+.botao-icone {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  padding: 8px;
+  flex: none;
+}
+.botao-icone:hover {
+  background: #7d916514;
+}
+.botao-texto {
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font-size: inherit;
+  font-weight: 600;
+  padding: 5px 0;
+}
+.botao-texto:hover {
+  color: #1f3c11;
+  text-decoration: underline;
+}
+.link-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 600;
+}
+.link-texto:hover {
+  text-decoration: underline;
+}
+.marca {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+.marca__simbolo {
+  display: grid;
+  place-items: center;
+  background: var(--green);
+  color: #f1f6e6;
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  margin-right: 8px;
+  flex: none;
+}
+.marca__leve {
+  font-weight: 400;
+}
+.chamada {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #879575;
+  line-height: 1.7;
+}
+.ponto-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #86a365;
+  display: inline-block;
+  flex: none;
+}
