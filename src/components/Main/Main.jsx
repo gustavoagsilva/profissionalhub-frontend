@@ -29,12 +29,7 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
                 Organizar minha rotina
                 <Icon name="arrow" size={18} />
               </button>
-              <button
-                className="botao botao--simples"
-                onClick={onDemo}
-                disabled={!onDemo}
-                title="Disponível em uma próxima etapa"
-              >
+              <button className="botao botao--simples" onClick={onDemo}>
                 Explorar demonstração
               </button>
             </div>

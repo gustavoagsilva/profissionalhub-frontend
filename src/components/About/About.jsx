@@ -12,12 +12,7 @@ export default function About({ onDemo }) {
           uma versão demonstrativa em desenvolvimento.
         </p>
       </div>
-      <button
-        className="botao botao--contorno"
-        onClick={onDemo}
-        disabled={!onDemo}
-        title="Disponível em uma próxima etapa"
-      >
+      <button className="botao botao--contorno" onClick={onDemo}>
         Conhecer por dentro
         <Icon name="arrow" size={18} />
       </button>

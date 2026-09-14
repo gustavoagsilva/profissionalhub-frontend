@@ -130,7 +130,7 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
           className="botao botao--principal botao--largura-total"
           disabled={!valid}
         >
-          {register ? "Validar cadastro" : "Validar login"}
+          {register ? "Criar conta de demonstração" : "Entrar na demonstração"}
           <Icon name="arrow" size={18} />
         </button>
       </form>

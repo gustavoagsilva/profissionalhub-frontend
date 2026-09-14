@@ -1,0 +1,95 @@
+.resumos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+.resumo {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+.resumo__rotulo {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0;
+}
+.resumo__valor {
+  display: block;
+  margin-top: 12px;
+  font-size: 32px;
+  font-weight: 600;
+}
+.painel__atendimentos {
+  padding: 0 23px;
+}
+.atendimento-resumido {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.atendimento-resumido:last-child {
+  border-bottom: 0;
+}
+.atendimento-resumido__horario {
+  min-width: 60px;
+}
+.atendimento-resumido__horario strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.atendimento-resumido__horario small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.atendimento-resumido__aluno {
+  flex: 1;
+  min-width: 0;
+}
+.atendimento-resumido__aluno strong {
+  display: block;
+  font-size: 13px;
+}
+.atendimento-resumido__aluno small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .resumos {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+  }
+  .resumo__valor {
+    margin-top: 0;
+    font-size: 26px;
+  }
+  .painel__atendimentos {
+    padding: 0 16px;
+  }
+  .atendimento-resumido {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .atendimento-resumido > .avatar {
+    display: none;
+  }
+  .atendimento-resumido > .etiqueta {
+    margin-left: auto;
+  }
+}

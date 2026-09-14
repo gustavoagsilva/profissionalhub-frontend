@@ -4,7 +4,9 @@ Plataforma de gestão da rotina de profissionais de Educação Física autônomo
 
 ## Estado atual
 
-Página pública em React, com Vite, fonte Manrope e modais de cadastro e login. Os formulários validam nome, e-mail e senha e permitem mostrar a senha e alternar entre cadastro e login. O envio apenas confirma a validação visual: não cria contas, não autentica e não salva os dados. Rotas internas, módulos e integração Geoapify ficam para as próximas etapas. Não representa a conclusão da Fase 1.
+Página pública, modais de cadastro/login e painel demonstrativo com navegação responsiva. É possível entrar pelos formulários ou pelo botão de demonstração. O painel mostra alunos ativos, atendimentos de hoje e cobranças em aberto com dados fictícios.
+
+A sessão salva apenas o nome no sessionStorage da aba, permite recarregar a página e é removida ao sair. Não há autenticação real, criação de contas ou armazenamento de senhas. O bloqueio de /painel é apenas uma simulação no frontend. Alunos, agenda, pendências e integração Geoapify serão conectados nas próximas etapas. Não representa a conclusão da Fase 1.
 
 ## Executar
 
@@ -28,7 +30,7 @@ Use o endereço informado pelo Vite.
 
 - `src/components`: pasta por componente, com JSX e CSS.
 - `src/utils`: funções auxiliares e futuros módulos de API.
-- `src/contexts`: contexto de autenticação a implementar.
+- `src/contexts`: contexto do usuário da demonstração.
 - `src/images` e `src/vendor`: imagens, fontes e recursos.
 
 ## Escopo aprovado
