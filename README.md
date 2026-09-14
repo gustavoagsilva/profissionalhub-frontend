@@ -4,7 +4,7 @@ Plataforma de gestão da rotina de profissionais de Educação Física autônomo
 
 ## Estado atual
 
-Estrutura inicial em React e JavaScript, com Vite e ESLint. A página inicial é provisória; autenticação, rotas, módulos e integração Geoapify ainda não estão implementados. Não representa a conclusão da Fase 1.
+Página pública em React, com Vite, fonte Manrope e modais de cadastro e login. Os formulários validam nome, e-mail e senha e permitem mostrar a senha e alternar entre cadastro e login. O envio apenas confirma a validação visual: não cria contas, não autentica e não salva os dados. Rotas internas, módulos e integração Geoapify ficam para as próximas etapas. Não representa a conclusão da Fase 1.
 
 ## Executar
 
@@ -37,4 +37,4 @@ Alunos, agenda individual, sessões, reposições autorizadas manualmente, cobra
 
 ## Desenvolvimento
 
-Branch `stage-react-api`, com futura pull request para `main`. Publicação no GitHub e deploy ainda pendentes. Não versionar chaves, tokens ou arquivos `.env`. Nenhuma chave Geoapify foi copiada para este projeto.
+Branch `stage-react-api`, com futura pull request para `main`. Repositório publicado no GitHub; deploy ainda pendente. Não versionar chaves, tokens ou arquivos `.env`.

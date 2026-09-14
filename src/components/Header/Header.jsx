@@ -13,19 +13,12 @@ export default function Header({ onLogin, onRegister }) {
       <nav className="apresentacao__navegacao" aria-label="Navegação principal">
         <a href="#recursos">A plataforma</a>
         <a href="#sobre">Sobre</a>
-        <button
-          className="botao-texto"
-          onClick={onLogin}
-          disabled={!onLogin}
-          title="Disponível em uma próxima etapa"
-        >
+        <button className="botao-texto" onClick={onLogin}>
           Entrar
         </button>
         <button
           className="botao botao--principal botao--pequeno"
           onClick={onRegister}
-          disabled={!onRegister}
-          title="Disponível em uma próxima etapa"
         >
           Começar agora
           <Icon name="arrow" size={16} />

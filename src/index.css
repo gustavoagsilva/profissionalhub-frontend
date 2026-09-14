@@ -236,3 +236,44 @@ p {
   display: inline-block;
   flex: none;
 }
+
+.formulario {
+  display: grid;
+  gap: 18px;
+}
+.campo {
+  display: grid;
+  gap: 8px;
+}
+.campo__rotulo {
+  font-size: 12px;
+  font-weight: 600;
+}
+.entrada {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #dfe4d7;
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-size: 13px;
+  background: #fcfdf9;
+  color: var(--ink);
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
+}
+.entrada:hover {
+  border-color: #b9c6ab;
+}
+.entrada::placeholder {
+  color: #a0a695;
+}
+.entrada[aria-invalid="true"] {
+  border-color: #bc7764;
+}
+.campo__erro {
+  color: #ae624c;
+  font-size: 11px;
+  line-height: 1.6;
+}

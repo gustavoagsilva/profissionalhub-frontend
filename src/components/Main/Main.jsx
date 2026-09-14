@@ -25,12 +25,7 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
               que acontece entre um atendimento e outro.
             </p>
             <div className="destaque__acoes">
-              <button
-                className="botao botao--principal"
-                onClick={onRegister}
-                disabled={!onRegister}
-                title="Disponível em uma próxima etapa"
-              >
+              <button className="botao botao--principal" onClick={onRegister}>
                 Organizar minha rotina
                 <Icon name="arrow" size={18} />
               </button>
