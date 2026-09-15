@@ -11,6 +11,8 @@ import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import Main from "../Main/Main";
 import AuthModal from "../AuthModal/AuthModal";
 import Navigation from "../Navigation/Navigation";
+import Students from "../Students/Students";
+import EntryForm from "../EntryForm/EntryForm";
 import Dashboard from "../Dashboard/Dashboard";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import Icon from "../Icon/Icon";
@@ -22,7 +24,7 @@ import {
 } from "../../utils/demoData";
 import "./App.css";
 const DEMO_USER_KEY = "profissionalhub:demo-user";
-const pages = { "/painel": "Visão geral" };
+const pages = { "/painel": "Visão geral", "/alunos": "Alunos" };
 function readDemoUser() {
   try {
     const user = JSON.parse(sessionStorage.getItem(DEMO_USER_KEY));
@@ -39,6 +41,8 @@ function Application() {
   const [currentUser, setCurrentUser] = useState(readDemoUser);
   const [authMode, setAuthMode] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [students, setStudents] = useState(initialStudents);
+  const [entryForm, setEntryForm] = useState(null);
   const [notice, setNotice] = useState("");
   const activeMode = authMode || (location.state?.openLogin ? "login" : null);
   useEffect(() => {
@@ -76,6 +80,8 @@ function Application() {
   };
   const signOut = () => {
     setCurrentUser(null);
+    setStudents(initialStudents);
+    setEntryForm(null);
     try {
       sessionStorage.removeItem(DEMO_USER_KEY);
     } catch {
@@ -86,6 +92,32 @@ function Application() {
     history.push("/");
     setNotice("Você saiu da demonstração.");
   };
+  function saveStudent(values) {
+    const id = crypto.randomUUID();
+    if (values.name.trim().length < 2)
+      return "Informe um nome com pelo menos dois caracteres.";
+    const data = {
+      id: values.id || id,
+      name: values.name.trim(),
+      email: values.email.trim(),
+      phone: values.phone.trim(),
+      goal: values.goal.trim(),
+      active: values.active ?? true,
+      color: values.color || "salvia",
+    };
+    setStudents((items) =>
+      values.id
+        ? items.map((item) => (item.id === values.id ? data : item))
+        : [...items, data],
+    );
+
+    setEntryForm(null);
+    setNotice(
+      values.id
+        ? "Aluno atualizado na demonstração."
+        : "Aluno adicionado à demonstração.",
+    );
+  }
   const workspace = (
     <div className="area-profissional">
       <Navigation
@@ -130,11 +162,32 @@ function Application() {
           </span>
         </div>
         <main className="area-profissional__conteudo" id="conteudo">
-          <Dashboard
-            students={initialStudents}
-            sessions={initialSessions}
-            charges={initialCharges}
-          />
+          <Switch>
+            <Route exact path="/painel">
+              <Dashboard
+                students={students}
+                sessions={initialSessions}
+                charges={initialCharges}
+              />
+            </Route>
+            <Route exact path="/alunos">
+              <Students
+                students={students}
+                onNew={() => setEntryForm({})}
+                onEdit={setEntryForm}
+                onToggle={(id) => {
+                  setStudents((items) =>
+                    items.map((item) =>
+                      item.id === id ? { ...item, active: !item.active } : item,
+                    ),
+                  );
+                  setNotice(
+                    "Status do aluno atualizado. O histórico foi preservado.",
+                  );
+                }}
+              />
+            </Route>
+          </Switch>
           <footer className="area-profissional__rodape">
             <span>ProfissionalHub · Sua rotina em equilíbrio.</span>
             <span>Feito para quem cuida do movimento.</span>
@@ -184,6 +237,14 @@ function Application() {
           onClose={closeAuth}
           onModeChange={setAuthMode}
           onEnter={enter}
+        />
+      )}
+      {entryForm && (
+        <EntryForm
+          key={entryForm.id || "new"}
+          entry={entryForm}
+          onClose={() => setEntryForm(null)}
+          onSave={saveStudent}
         />
       )}
       <div

@@ -478,3 +478,73 @@ p {
     scroll-behavior: auto !important;
   }
 }
+
+.barra-ferramentas {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  justify-content: space-between;
+  padding: 23px;
+  border-bottom: 1px solid var(--line);
+}
+.barra-ferramentas__quantidade {
+  font-size: 11px;
+  color: var(--muted);
+}
+.barra-ferramentas__selecao {
+  max-width: 180px;
+}
+.busca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 380px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--muted);
+  background: #fafbf7;
+}
+.busca input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  height: 44px;
+  color: var(--ink);
+}
+.busca:focus-within {
+  outline: 2px solid #96ae78;
+}
+.busca input:focus-visible {
+  outline: none;
+}
+.formulario__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+.formulario__erro {
+  color: #96523e;
+  background: #fcf0e9;
+  padding: 14px;
+  font-size: 12px;
+  border-radius: 8px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .barra-ferramentas {
+    flex-wrap: wrap;
+    padding: 18px 16px;
+  }
+  .busca {
+    min-width: 100%;
+  }
+  .barra-ferramentas__selecao {
+    max-width: none;
+  }
+}

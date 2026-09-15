@@ -6,7 +6,7 @@ Plataforma de gestão da rotina de profissionais de Educação Física autônomo
 
 Página pública, modais de cadastro/login e painel demonstrativo com navegação responsiva. É possível entrar pelos formulários ou pelo botão de demonstração. O painel mostra alunos ativos, atendimentos de hoje e cobranças em aberto com dados fictícios.
 
-A sessão salva apenas o nome no sessionStorage da aba, permite recarregar a página e é removida ao sair. Não há autenticação real, criação de contas ou armazenamento de senhas. O bloqueio de /painel é apenas uma simulação no frontend. Alunos, agenda, pendências e integração Geoapify serão conectados nas próximas etapas. Não representa a conclusão da Fase 1.
+A sessão salva apenas o nome no sessionStorage da aba, permite recarregar a página e é removida ao sair. Não há autenticação real, criação de contas ou armazenamento de senhas. O bloqueio de /painel é apenas uma simulação no frontend. A rota /alunos permite buscar por nome ou e-mail, filtrar por status, cadastrar, editar e ativar/inativar alunos. O total de ativos no painel acompanha as alterações. Os dados são temporários e voltam aos exemplos iniciais ao recarregar ou sair da demonstração. Agenda, pendências e integração Geoapify serão conectadas nas próximas etapas. Não representa a conclusão da Fase 1.
 
 ## Executar
 

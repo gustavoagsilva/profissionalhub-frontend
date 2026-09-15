@@ -4,7 +4,10 @@ import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import { initials } from "../../utils/demoData";
 import Icon from "../Icon/Icon";
 import "./Navigation.css";
-const links = [{ path: "/painel", icon: "grid", name: "Visão geral" }];
+const links = [
+  { path: "/painel", icon: "grid", name: "Visão geral" },
+  { path: "/alunos", icon: "users", name: "Alunos" },
+];
 export default function Navigation({ onSignOut, open, onClose }) {
   const user = useContext(CurrentUserContext);
   return (
