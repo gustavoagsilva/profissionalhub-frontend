@@ -7,6 +7,7 @@ import "./Navigation.css";
 const links = [
   { path: "/painel", icon: "grid", name: "Visão geral" },
   { path: "/alunos", icon: "users", name: "Alunos" },
+  { path: "/agenda", icon: "calendar", name: "Agenda" },
 ];
 export default function Navigation({ onSignOut, open, onClose }) {
   const user = useContext(CurrentUserContext);

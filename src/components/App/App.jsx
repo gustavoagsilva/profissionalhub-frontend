@@ -15,8 +15,12 @@ import Students from "../Students/Students";
 import EntryForm from "../EntryForm/EntryForm";
 import Dashboard from "../Dashboard/Dashboard";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
+import Agenda from "../Agenda/Agenda";
+import Modal from "../Modal/Modal";
 import Icon from "../Icon/Icon";
 import {
+  DEMO_DATE,
+  initialLocations,
   initialStudents,
   initialSessions,
   initialCharges,
@@ -24,7 +28,11 @@ import {
 } from "../../utils/demoData";
 import "./App.css";
 const DEMO_USER_KEY = "profissionalhub:demo-user";
-const pages = { "/painel": "Visão geral", "/alunos": "Alunos" };
+const pages = {
+  "/painel": "Visão geral",
+  "/alunos": "Alunos",
+  "/agenda": "Agenda",
+};
 function readDemoUser() {
   try {
     const user = JSON.parse(sessionStorage.getItem(DEMO_USER_KEY));
@@ -42,6 +50,8 @@ function Application() {
   const [authMode, setAuthMode] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [students, setStudents] = useState(initialStudents);
+  const [sessions, setSessions] = useState(initialSessions);
+  const [occurrence, setOccurrence] = useState(null);
   const [entryForm, setEntryForm] = useState(null);
   const [notice, setNotice] = useState("");
   const activeMode = authMode || (location.state?.openLogin ? "login" : null);
@@ -81,6 +91,8 @@ function Application() {
   const signOut = () => {
     setCurrentUser(null);
     setStudents(initialStudents);
+    setSessions(initialSessions);
+    setOccurrence(null);
     setEntryForm(null);
     try {
       sessionStorage.removeItem(DEMO_USER_KEY);
@@ -117,6 +129,59 @@ function Application() {
         ? "Aluno atualizado na demonstração."
         : "Aluno adicionado à demonstração.",
     );
+  }
+  const newSession = (date = DEMO_DATE) =>
+    setEntryForm({ kind: "session", entry: { date } });
+  function saveEntry(values) {
+    if (entryForm.kind === "student") return saveStudent(values);
+    if (values.time >= values.end)
+      return "O término precisa ser depois do início.";
+    if (
+      !students.some(
+        (student) => student.id === values.studentId && student.active,
+      )
+    )
+      return "Selecione um aluno ativo.";
+    if (
+      sessions.some(
+        (session) =>
+          session.date === values.date &&
+          session.status !== "cancelled" &&
+          session.status !== "missed" &&
+          values.time < session.end &&
+          values.end > session.time,
+      )
+    )
+      return "Já existe um atendimento neste intervalo. Escolha outro horário.";
+    setSessions((items) => [
+      ...items,
+      {
+        id: crypto.randomUUID(),
+        studentId: values.studentId,
+        date: values.date,
+        time: values.time,
+        end: values.end,
+        location: values.location,
+        status: "scheduled",
+      },
+    ]);
+    setEntryForm(null);
+    setNotice("Atendimento agendado na demonstração.");
+  }
+  function applyStatus(session, status) {
+    if (sessions.find((item) => item.id === session.id)?.status !== "scheduled")
+      return;
+    setSessions((items) =>
+      items.map((item) =>
+        item.id === session.id ? { ...item, status } : item,
+      ),
+    );
+    setOccurrence(null);
+    setNotice("Resultado do atendimento registrado na demonstração.");
+  }
+  function sessionStatus(session, status) {
+    if (status === "completed") applyStatus(session, status);
+    else setOccurrence({ session, status });
   }
   const workspace = (
     <div className="area-profissional">
@@ -166,15 +231,16 @@ function Application() {
             <Route exact path="/painel">
               <Dashboard
                 students={students}
-                sessions={initialSessions}
+                sessions={sessions}
+                onNewSession={() => newSession()}
                 charges={initialCharges}
               />
             </Route>
             <Route exact path="/alunos">
               <Students
                 students={students}
-                onNew={() => setEntryForm({})}
-                onEdit={setEntryForm}
+                onNew={() => setEntryForm({ kind: "student" })}
+                onEdit={(entry) => setEntryForm({ kind: "student", entry })}
                 onToggle={(id) => {
                   setStudents((items) =>
                     items.map((item) =>
@@ -185,6 +251,14 @@ function Application() {
                     "Status do aluno atualizado. O histórico foi preservado.",
                   );
                 }}
+              />
+            </Route>
+            <Route exact path="/agenda">
+              <Agenda
+                sessions={sessions}
+                students={students}
+                onNew={newSession}
+                onStatus={sessionStatus}
               />
             </Route>
           </Switch>
@@ -241,11 +315,40 @@ function Application() {
       )}
       {entryForm && (
         <EntryForm
-          key={entryForm.id || "new"}
-          entry={entryForm}
+          key={entryForm.kind + (entryForm.entry?.id || "new")}
+          kind={entryForm.kind}
+          students={students}
+          locations={initialLocations}
+          entry={entryForm.entry}
           onClose={() => setEntryForm(null)}
-          onSave={saveStudent}
+          onSave={saveEntry}
         />
+      )}
+      {occurrence && (
+        <Modal
+          title={
+            occurrence.status === "missed"
+              ? "Registrar falta"
+              : "Cancelar atendimento"
+          }
+          subtitle="Confirme o resultado deste atendimento."
+          onClose={() => setOccurrence(null)}
+        >
+          <div className="formulario__acoes">
+            <button
+              className="botao botao--contorno"
+              onClick={() => setOccurrence(null)}
+            >
+              Voltar
+            </button>
+            <button
+              className="botao botao--principal"
+              onClick={() => applyStatus(occurrence.session, occurrence.status)}
+            >
+              Confirmar
+            </button>
+          </div>
+        </Modal>
       )}
       <div
         className={"notificacao" + (notice ? " notificacao--visivel" : "")}

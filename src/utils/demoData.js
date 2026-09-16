@@ -125,3 +125,27 @@ export const initials = (name) =>
     .slice(0, 2)
     .map((part) => part[0])
     .join("");
+
+export const initialLocations = [
+  {
+    id: "l1",
+    name: "Parque Ibirapuera",
+    category: "Ao ar livre",
+    address: "Vila Mariana · São Paulo, SP",
+    icon: "tree",
+  },
+  {
+    id: "l2",
+    name: "Studio Vila Mariana",
+    category: "Studio",
+    address: "Local fictício para demonstração",
+    icon: "building",
+  },
+  {
+    id: "l3",
+    name: "Atendimento domiciliar",
+    category: "Domiciliar",
+    address: "Endereço combinado com o aluno",
+    icon: "home",
+  },
+];

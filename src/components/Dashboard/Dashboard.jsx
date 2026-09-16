@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { DEMO_DATE, initials } from "../../utils/demoData";
+import Icon from "../Icon/Icon";
 import "./Dashboard.css";
 
 const sessionStatus = {
@@ -7,7 +9,12 @@ const sessionStatus = {
   missed: { label: "Falta", color: "laranja" },
 };
 
-export default function Dashboard({ students, sessions, charges }) {
+export default function Dashboard({
+  students,
+  sessions,
+  charges,
+  onNewSession,
+}) {
   const activeStudents = students.filter((student) => student.active);
   const unpaidCharges = charges.filter((charge) => !charge.paid);
   const todaySessions = sessions
@@ -23,6 +30,10 @@ export default function Dashboard({ students, sessions, charges }) {
           <h1>Visão geral</h1>
           <p>Acompanhe seus alunos e os atendimentos de hoje.</p>
         </div>
+        <button className="botao botao--principal" onClick={onNewSession}>
+          <Icon name="plus" size={17} />
+          Novo atendimento
+        </button>
       </div>
 
       <div className="resumos">
@@ -51,6 +62,10 @@ export default function Dashboard({ students, sessions, charges }) {
               })}
             </p>
           </div>
+          <Link to="/agenda" className="link-texto">
+            Ver agenda
+            <Icon name="arrow" size={16} />
+          </Link>
         </div>
         <div className="painel__atendimentos">
           {todaySessions.map((session) => {
@@ -81,7 +96,10 @@ export default function Dashboard({ students, sessions, charges }) {
             );
           })}
           {todaySessions.length === 0 && (
-            <p className="estado-vazio">Nenhum atendimento para hoje.</p>
+            <p className="estado-vazio">
+              Nenhum atendimento para hoje. Use o botão “Novo atendimento” para
+              agendar.
+            </p>
           )}
         </div>
       </section>
