@@ -149,3 +149,24 @@ export const initialLocations = [
     icon: "home",
   },
 ];
+
+export const initialMakeups = [
+  {
+    id: "m1",
+    studentId: "s1",
+    reason: "Cancelamento com reposição autorizada",
+    status: "pending",
+  },
+];
+export const money = (value) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+export const formatDate = (date) =>
+  new Date(date + "T12:00:00").toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  });

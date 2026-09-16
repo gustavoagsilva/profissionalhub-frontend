@@ -8,8 +8,9 @@ const links = [
   { path: "/painel", icon: "grid", name: "Visão geral" },
   { path: "/alunos", icon: "users", name: "Alunos" },
   { path: "/agenda", icon: "calendar", name: "Agenda" },
+  { path: "/pendencias", icon: "wallet", name: "Pendências" },
 ];
-export default function Navigation({ onSignOut, open, onClose }) {
+export default function Navigation({ onSignOut, open, onClose, pending }) {
   const user = useContext(CurrentUserContext);
   return (
     <>
@@ -55,6 +56,9 @@ export default function Navigation({ onSignOut, open, onClose }) {
             >
               <Icon name={link.icon} size={19} />
               <span>{link.name}</span>
+              {link.path === "/pendencias" && pending > 0 && (
+                <small className="menu-lateral__quantidade">{pending}</small>
+              )}
             </NavLink>
           ))}
         </nav>

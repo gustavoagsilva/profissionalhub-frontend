@@ -19,12 +19,16 @@ export default function EntryForm({
     time: "10:00",
     end: "11:00",
     location: locations[0]?.name || "",
+    amount: "",
+    due: DEMO_DATE,
+    description: "Atendimento",
     ...entry,
   }));
   const [error, setError] = useState("");
   const titles = {
     student: entry?.id ? "Editar aluno" : "Um novo aluno por perto.",
-    session: "Novo atendimento",
+    session: entry?.makeupId ? "Agendar reposição" : "Novo atendimento",
+    charge: "Nova cobrança",
   };
   const input = (name, label, type = "text", extra = {}) => (
     <div className="campo" key={name}>
@@ -83,6 +87,7 @@ export default function EntryForm({
                 className="entrada"
                 value={values.studentId}
                 required
+                disabled={Boolean(entry?.makeupId)}
                 onChange={(event) =>
                   setValues({ ...values, studentId: event.target.value })
                 }
@@ -99,31 +104,44 @@ export default function EntryForm({
                   ))}
               </select>
             </div>
-            {input("date", "Data", "date")}
-            <div className="formulario__linha">
-              {input("time", "Início", "time")}
-              {input("end", "Término", "time")}
-            </div>
-            <div className="campo">
-              <label className="campo__rotulo" htmlFor="entry-location">
-                Local
-              </label>
-              <select
-                id="entry-location"
-                className="entrada"
-                value={values.location}
-                required
-                onChange={(event) =>
-                  setValues({ ...values, location: event.target.value })
-                }
-              >
-                {locations.map((location) => (
-                  <option key={location.id} value={location.name}>
-                    {location.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {kind === "session" ? (
+              <>
+                {input("date", "Data", "date")}
+                <div className="formulario__linha">
+                  {input("time", "Início", "time")}
+                  {input("end", "Término", "time")}
+                </div>
+                <div className="campo">
+                  <label className="campo__rotulo" htmlFor="entry-location">
+                    Local
+                  </label>
+                  <select
+                    id="entry-location"
+                    className="entrada"
+                    value={values.location}
+                    required
+                    onChange={(event) =>
+                      setValues({ ...values, location: event.target.value })
+                    }
+                  >
+                    {locations.map((location) => (
+                      <option key={location.id} value={location.name}>
+                        {location.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                {input("description", "Descrição")}
+                {input("amount", "Valor (R$)", "number", {
+                  min: "0.01",
+                  step: "0.01",
+                })}
+                {input("due", "Vencimento", "date")}
+              </>
+            )}
           </>
         )}
         {error && (

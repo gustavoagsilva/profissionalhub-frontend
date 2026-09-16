@@ -106,6 +106,11 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
                         <Icon name="pin" size={13} />
                         {session.location}
                       </p>
+                      {session.makeupId && (
+                        <span className="etiqueta etiqueta--verde">
+                          Reposição
+                        </span>
+                      )}
                     </div>
                     <span
                       className={

@@ -121,6 +121,24 @@
 .pagina-nao-encontrada .botao {
   margin-top: 15px;
 }
+.ocorrencia {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.ocorrencia__opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: var(--sage);
+  border-radius: 10px;
+  color: var(--green);
+  margin-bottom: 24px;
+}
+.ocorrencia__opcao input {
+  accent-color: var(--green);
+}
 @media (max-width: 1000px) {
   .area-profissional__corpo {
     margin-left: 225px;
