@@ -9,6 +9,7 @@ const links = [
   { path: "/alunos", icon: "users", name: "Alunos" },
   { path: "/agenda", icon: "calendar", name: "Agenda" },
   { path: "/pendencias", icon: "wallet", name: "Pendências" },
+  { path: "/locais", icon: "pin", name: "Explorar locais" },
 ];
 export default function Navigation({ onSignOut, open, onClose, pending }) {
   const user = useContext(CurrentUserContext);

@@ -15,6 +15,7 @@ import Dashboard from "../Dashboard/Dashboard";
 import Students from "../Students/Students";
 import Agenda from "../Agenda/Agenda";
 import Pending from "../Pending/Pending";
+import Locations from "../Locations/Locations";
 import EntryForm from "../EntryForm/EntryForm";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import Modal from "../Modal/Modal";
@@ -35,6 +36,7 @@ const pages = {
   "/alunos": "Alunos",
   "/agenda": "Agenda",
   "/pendencias": "Pendências",
+  "/locais": "Explorar locais",
 };
 function readDemoUser() {
   try {
@@ -60,6 +62,7 @@ function Application() {
   const [sessions, setSessions] = useState(initialSessions);
   const [charges, setCharges] = useState(initialCharges);
   const [makeups, setMakeups] = useState(initialMakeups);
+  const [locations, setLocations] = useState(initialLocations);
   const activeMode = authMode || (location.state?.openLogin ? "login" : null);
   useEffect(() => {
     if (!notice) return;
@@ -106,6 +109,7 @@ function Application() {
     setSessions(initialSessions);
     setCharges(initialCharges);
     setMakeups(initialMakeups);
+    setLocations(initialLocations);
     setMobileOpen(false);
     setEntryForm(null);
     setOccurrence(null);
@@ -292,7 +296,7 @@ function Application() {
           <Icon name="spark" size={14} />
           <span>
             <strong>Modo demonstração</strong> · Dados fictícios e alterações
-            temporárias. Nenhuma conta real foi criada.
+            temporárias. A busca de locais usa a Geoapify real.
           </span>
         </div>
         <main className="area-profissional__conteudo" id="conteudo">
@@ -354,6 +358,21 @@ function Application() {
                 onNewCharge={() => setEntryForm({ kind: "charge" })}
               />
             </Route>
+            <Route exact path="/locais">
+              <Locations
+                saved={locations}
+                onSave={(place) => {
+                  setLocations((items) =>
+                    items.some((item) => item.id === place.id)
+                      ? items
+                      : [...items, place],
+                  );
+                  setNotice(
+                    "Local adicionado à lista temporária de atendimento.",
+                  );
+                }}
+              />
+            </Route>
           </Switch>
           <footer className="area-profissional__rodape">
             <span>ProfissionalHub · Sua rotina em equilíbrio.</span>
@@ -412,7 +431,7 @@ function Application() {
           kind={entryForm.kind}
           entry={entryForm.entry}
           students={students}
-          locations={initialLocations}
+          locations={locations}
           onClose={() => setEntryForm(null)}
           onSave={saveEntry}
         />

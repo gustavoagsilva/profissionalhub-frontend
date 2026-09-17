@@ -554,3 +554,20 @@ p {
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+
+.titulo-secao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 28px 0 18px;
+}
+.titulo-secao h2 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+}
+.titulo-secao > span {
+  font-size: 10px;
+  color: var(--muted);
+}
