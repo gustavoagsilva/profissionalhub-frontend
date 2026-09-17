@@ -118,14 +118,14 @@ export const initialCharges = [
     paid: false,
   },
 ];
-export const initials = (name) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
-
+export const initialMakeups = [
+  {
+    id: "m1",
+    studentId: "s1",
+    reason: "Cancelamento com reposição autorizada",
+    status: "pending",
+  },
+];
 export const initialLocations = [
   {
     id: "l1",
@@ -149,15 +149,6 @@ export const initialLocations = [
     icon: "home",
   },
 ];
-
-export const initialMakeups = [
-  {
-    id: "m1",
-    studentId: "s1",
-    reason: "Cancelamento com reposição autorizada",
-    status: "pending",
-  },
-];
 export const money = (value) =>
   value.toLocaleString("pt-BR", {
     style: "currency",
@@ -165,6 +156,13 @@ export const money = (value) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+export const initials = (name) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("");
 export const formatDate = (date) =>
   new Date(date + "T12:00:00").toLocaleDateString("pt-BR", {
     day: "2-digit",
