@@ -1,53 +1,90 @@
 # ProfissionalHub — Frontend
 
-Plataforma de gestão da rotina de profissionais de Educação Física autônomos.
+Aplicação para organizar a rotina de profissionais de Educação Física autônomos. Primeira versão visual e navegável, com operações temporárias de demonstração e integração real com Geoapify.
 
-## Estado atual
-
-Página pública, modais de cadastro/login e painel demonstrativo com navegação responsiva. É possível entrar pelos formulários ou pelo botão de demonstração. O painel mostra alunos ativos, atendimentos de hoje e cobranças em aberto com dados fictícios.
-
-A sessão salva apenas o nome no sessionStorage da aba, permite recarregar a página e é removida ao sair. Não há autenticação real, criação de contas ou armazenamento de senhas. O bloqueio de /painel é apenas uma simulação no frontend. A rota /alunos permite buscar por nome ou e-mail, filtrar por status, cadastrar, editar e ativar/inativar alunos. O total de ativos no painel acompanha as alterações. Os dados são temporários e voltam aos exemplos iniciais ao recarregar ou sair da demonstração. A agenda permite consultar datas, agendar para alunos ativos e registrar realização, falta ou cancelamento. Horários sobrepostos são bloqueados; horários consecutivos são permitidos. O painel acompanha as alterações. Os locais disponíveis nesta etapa são exemplos fictícios. A página de pendências permite criar cobranças e registrar sua quitação integral manualmente. Faltas e cancelamentos podem gerar uma reposição quando o profissional autoriza. Agendar reserva o horário; realizar conclui a reposição; falta ou cancelamento da reposição a devolve para agendamento, sem duplicar o crédito. Alunos inativos não podem agendar reposições. Não há processamento de pagamentos nem persistência real. A rota /locais busca academias, parques e centros esportivos pela Geoapify em um raio de 15 km do centro de São Paulo. Mostra inicialmente três resultados e permite carregar mais três por vez, até o limite de 18 retornados. Há indicação de carregamento, estados de erro e resultado vazio. Dois locais podem ser selecionados para estimar distância e tempo de carro. Locais salvos ficam disponíveis no formulário de agendamento durante a demonstração. Não representa a conclusão da Fase 1.
-
-## Executar
+## Executar localmente
 
 Validado com Node.js 24.15.0 e npm 11.12.1.
 
-```bash
-npm ci
-npm run dev
-```
+1. Abra um terminal na pasta `profissionalhub-frontend` e execute `npm ci`.
+2. Copie `.env.example` para `.env` e preencha `VITE_GEOAPIFY_API_KEY`. Salve como UTF-8 sem BOM.
+3. Execute `npm run dev` e abra o endereço informado pelo Vite. Reinicie o servidor se alterar o `.env`.
 
-Antes de executar, copie `.env.example` para `.env` e preencha `VITE_GEOAPIFY_API_KEY` com sua chave Geoapify. Reinicie o Vite após alterar esse arquivo. Sem a chave, as demais telas funcionam, mas a busca informa a configuração ausente.
+O arquivo `.env` é ignorado pelo Git. Variáveis com prefixo `VITE_` fazem parte do frontend compilado: a chave Geoapify precisa ter restrições de origem/domínio no painel do fornecedor antes da publicação. Sem a chave, a demonstração funciona e a busca informa a configuração ausente.
 
-Use o endereço informado pelo Vite.
+## O que já funciona
 
-## API externa
+- Apresentação pública, informações sobre o autor e interface responsiva.
+- Modais de cadastro e login com validação, mensagens, exibição de senha, fechamento por Escape e navegação por teclado.
+- Entrada direta pelo botão “Explorar demonstração”.
+- Painel simples com três contagens (alunos ativos, atendimentos de hoje e cobranças em aberto), lista do dia e botão de agendamento.
+- Cadastro, edição, busca e ativação/inativação de alunos.
+- Agenda diária com agendamento e bloqueio de sobreposição de horários.
+- Registro de realização, falta e cancelamento; concessão manual de reposição.
+- Reposição com estados a agendar, agendada e concluída. Cancelar a sessão de reposição reabre a pendência.
+- Cobranças manuais e registro de pagamento integral.
+- Geoapify: busca real de locais por categoria em um raio de 15 km do centro de São Paulo, até 18 resultados exibidos de três em três, seleção de dois locais e cálculo real de deslocamento de carro.
+- Salvamento temporário de locais para utilização na agenda.
+- Carregamento, erro, nenhum resultado e cancelamento de requisições ao sair da página.
 
-- GET `/v2/places`: busca de locais.
-- POST `/v1/routematrix`: estimativa de deslocamento entre dois locais.
-- Requisições usam fetch, timeout e cancelamento ao sair da página.
-- Estimativas não garantem trânsito em tempo real. Confira o acesso aos locais antes de atendimentos.
-- Atribuição à Geoapify e aos colaboradores do OpenStreetMap aparece na tela.
-- Variáveis `VITE_` são expostas ao navegador: configure as restrições da chave no provedor antes do deploy. O `.env` não deve ser versionado.
+## Limites desta versão
+
+**Não existe autenticação real.** O formulário simula a entrada para avaliação visual. Não cria contas, não envia credenciais e não salva senhas. Use somente dados fictícios.
+
+O nome da conta demonstrativa fica no `sessionStorage`. Os dados operacionais ficam apenas na memória: recarregar a página ou sair restaura a demonstração inicial. A proteção de rotas é exclusivamente visual e não constitui segurança de backend. JWT e integração com a API própria serão implementados nas próximas etapas.
+
+A busca Geoapify retorna dados reais; os demais registros iniciais são fictícios. As estimativas de viagem não representam garantia de trânsito em tempo real. Conferir acesso e disponibilidade com cada local.
+
+Esta versão ainda não representa uma entrega final do curso. Permanecem pendentes autenticação/API própria, persistência, refinamentos das regras e telas, revisão completa de critérios e deploy. O repositório frontend já está publicado no GitHub.
+
+## Integração Geoapify
+
+- GET `/v2/places`: busca de locais por categoria.
+- POST `/v1/routematrix`: distância e tempo estimados entre dois locais.
+- As chamadas ficam em `src/utils/ThirdPartyApi.js`, com timeout e cancelamento.
+
+## Rotas
+
+| Rota          | Conteúdo                         |
+| ------------- | -------------------------------- |
+| `/`           | Apresentação pública e modais    |
+| `/painel`     | Visão geral                      |
+| `/alunos`     | Gestão de alunos                 |
+| `/agenda`     | Agenda diária                    |
+| `/pendencias` | Cobranças e reposições           |
+| `/locais`     | Geoapify e locais de atendimento |
+
+As rotas internas exigem uma sessão demonstrativa. Acesso direto sem sessão redireciona para a página pública e abre a modal de login. Um futuro servidor de produção precisa redirecionar rotas do frontend para `index.html`.
 
 ## Comandos
 
-- `npm run dev`: desenvolvimento.
-- `npm run lint`: análise estática com ESLint.
-- `npm run build`: build em `dist/`.
-- `npm run preview`: visualizar o build localmente.
+| Comando                | Finalidade                  |
+| ---------------------- | --------------------------- |
+| `npm run dev`          | Servidor de desenvolvimento |
+| `npm run lint`         | ESLint                      |
+| `npm run build`        | Build de produção em dist/  |
+| `npm run preview`      | Visualização local do build |
+| `npm run format`       | Formatar o código em src/   |
+| `npm run format:check` | Verificar formatação        |
 
-## Estrutura
+## Organização
 
-- `src/components`: pasta por componente, com JSX e CSS.
-- `src/utils`: funções auxiliares e futuros módulos de API.
-- `src/contexts`: contexto do usuário da demonstração.
-- `src/images` e `src/vendor`: imagens, fontes e recursos.
+- `src/components`: componentes, páginas e estilos.
+- `src/contexts/CurrentUserContext.js`: perfil demonstrativo compartilhado.
+- `src/utils/demoData.js`: dados fictícios e formatação.
+- `src/utils/ThirdPartyApi.js`: chamadas HTTP à Geoapify.
+- `src/index.css`: tipografia local, variáveis, estilos compartilhados e acessibilidade.
 
-## Escopo aprovado
+React, React Router 5, Vite, ESLint e Prettier. Fonte Manrope distribuída por @fontsource, com arquivos WOFF/WOFF2 e carregamento local via @font-face.
 
-Alunos, agenda individual, sessões, reposições autorizadas manualmente, cobranças com quitação integral e painel operacional. Geoapify para explorar locais e consultar deslocamentos em São Paulo, com GET e POST.
+## Validação
 
-## Desenvolvimento
+Lint, build e testes de navegador no Edge sem interface gráfica. Os fluxos incluem cadastro/login demonstrativos, campos inválidos, ausência de persistência de senha, criação de aluno, conflitos de agenda, conclusão de reposição, quitação, saída e proteção de rota. Verificação de ausência de rolagem horizontal em 320 e 390 px.
 
-Branch `stage-react-api`, com futura pull request para `main`. Repositório publicado no GitHub; deploy ainda pendente. Não versionar chaves, tokens ou arquivos `.env`.
+A Geoapify foi testada com GET e POST reais. Estados vazios e erro HTTP foram simulados. Scripts de validação e capturas ficam fora do repositório, na pasta local de validação do ProfissionalHub; não há comando `npm test` configurado. Testes em aparelhos físicos e no domínio publicado ainda pendentes.
+
+## Créditos e desenvolvimento
+
+Dados de locais: [Geoapify](https://www.geoapify.com/) e [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Desenvolvido por Gustavo Augusto.
+
+Trabalho na branch `stage-react-api`; submeter pull request para `main` conforme as etapas do curso.
