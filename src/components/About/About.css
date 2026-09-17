@@ -11,9 +11,25 @@
   flex: 1;
 }
 .sobre h2 {
-  font-size: 24px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -1px;
   margin: 14px 0;
 }
 .sobre .botao {
   flex: none;
+}
+
+.sobre p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+@media (max-width: 760px) {
+  .sobre {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 25px;
+  }
 }

@@ -4,12 +4,17 @@ export default function About({ onDemo }) {
   return (
     <section id="sobre" className="sobre">
       <div>
-        <span className="chamada">SOBRE O PROJETO</span>
-        <h2>Tecnologia a serviço da sua rotina.</h2>
+        <span className="chamada">SOBRE O PROFISSIONALHUB</span>
+        <h2>Mais organização para cuidar de quem se movimenta.</h2>
         <p>
-          Desenvolvido por Gustavo Augusto, o ProfissionalHub nasce para apoiar
-          a organização de profissionais autônomos de Educação Física. Esta é
-          uma versão demonstrativa em desenvolvimento.
+          O ProfissionalHub foi pensado para profissionais autônomos de Educação
+          Física que dividem o dia entre alunos, atendimentos e a gestão do
+          próprio trabalho.
+        </p>
+        <p>
+          Reúna sua agenda, acompanhe pagamentos e reposições e encontre locais
+          para atender em um só lugar. Uma forma simples de organizar os
+          detalhes da rotina e dedicar mais atenção aos seus alunos.
         </p>
       </div>
       <button className="botao botao--contorno" onClick={onDemo}>

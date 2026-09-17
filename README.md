@@ -75,7 +75,7 @@ As rotas internas exigem uma sessão demonstrativa. Acesso direto sem sessão re
 - `src/utils/ThirdPartyApi.js`: chamadas HTTP à Geoapify.
 - `src/index.css`: tipografia local, variáveis, estilos compartilhados e acessibilidade.
 
-React, React Router 5, Vite, ESLint e Prettier. Fonte Manrope distribuída por @fontsource, com arquivos WOFF/WOFF2 e carregamento local via @font-face.
+React, React Router 5, Vite, ESLint e Prettier. O normalize.css é carregado antes dos estilos do projeto para padronizar os estilos iniciais dos navegadores. Fonte Manrope distribuída por @fontsource, com arquivos WOFF/WOFF2 e carregamento local via @font-face.
 
 ## Validação
 

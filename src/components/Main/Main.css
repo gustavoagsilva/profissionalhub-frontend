@@ -205,8 +205,7 @@
   border-top: 1px solid var(--line);
   padding: 60px 0;
 }
-.recursos h2,
-.sobre h2 {
+.recursos h2 {
   font-size: 30px;
   font-weight: 600;
   line-height: 1.4;
@@ -235,8 +234,7 @@
   font-size: 16px;
   margin: 22px 0 10px;
 }
-.recurso p,
-.sobre p {
+.recurso p {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.8;
@@ -244,9 +242,6 @@
 @media (max-width: 1000px) {
   .apresentacao {
     padding: 0 28px;
-  }
-  .apresentacao__navegacao {
-    gap: 18px;
   }
   .destaque {
     gap: 25px;
@@ -265,15 +260,6 @@
   }
 }
 @media (max-width: 760px) {
-  .apresentacao__cabecalho {
-    height: auto;
-    min-height: 90px;
-    flex-wrap: wrap;
-    padding: 20px 0;
-  }
-  .apresentacao__navegacao > a {
-    display: none;
-  }
   .destaque {
     grid-template-columns: 1fr;
     padding: 35px 0 60px;
@@ -299,15 +285,6 @@
   }
   .recursos h2 {
     font-size: 25px;
-  }
-  .sobre {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 25px;
-  }
-  .apresentacao__rodape {
-    flex-direction: column;
-    gap: 10px;
   }
   .destaque h1 {
     font-size: 52px;

@@ -14,8 +14,12 @@ export default function Header({ onLogin, onRegister, onSignOut }) {
         Profissional<span className="marca__leve">Hub</span>
       </a>
       <nav className="apresentacao__navegacao" aria-label="Navegação principal">
-        <a href="#recursos">A plataforma</a>
-        <a href="#sobre">Sobre</a>
+        <a className="apresentacao__link-institucional" href="#recursos">
+          A plataforma
+        </a>
+        <a className="apresentacao__link-institucional" href="#sobre">
+          Sobre
+        </a>
         {user ? (
           <>
             <Link className="link-texto" to="/painel">

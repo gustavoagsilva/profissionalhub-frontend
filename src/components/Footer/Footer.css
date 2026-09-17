@@ -7,3 +7,10 @@
   font-size: 11px;
   color: var(--muted);
 }
+
+@media (max-width: 760px) {
+  .apresentacao__rodape {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
