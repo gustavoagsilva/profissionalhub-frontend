@@ -1,0 +1,27 @@
+.carregamento {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 42px 15px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.carregamento__indicador {
+  border: 2px solid var(--line);
+  border-top-color: var(--green);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carregamento__indicador {
+    animation: none;
+  }
+}

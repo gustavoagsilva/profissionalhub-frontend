@@ -1,0 +1,59 @@
+.lista-alunos {
+  padding: 0 24px;
+}
+.aluno {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 23px 0;
+  border-bottom: 1px solid var(--line);
+}
+.aluno:last-child {
+  border: 0;
+}
+.aluno__informacoes {
+  flex: 1;
+  min-width: 0;
+}
+.aluno__informacoes h2 {
+  font-size: 14px;
+  margin: 0 0 5px;
+}
+.aluno__informacoes p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 5px;
+  overflow-wrap: anywhere;
+}
+.aluno__informacoes > span {
+  font-size: 10px;
+  color: #8a9281;
+}
+.aluno__acoes {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 12px;
+}
+.aluno__alternar-status {
+  font-size: 10px;
+  min-width: 45px;
+}
+@media (max-width: 600px) {
+  .lista-alunos {
+    padding: 0 16px;
+  }
+  .aluno {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .aluno__informacoes {
+    flex-basis: calc(100% - 70px);
+  }
+  .aluno__acoes {
+    margin-left: auto;
+  }
+  .aluno > .etiqueta {
+    margin-left: 60px;
+  }
+}

@@ -1,0 +1,123 @@
+.agenda__data {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.agenda__data .entrada {
+  width: 152px;
+}
+.agenda__anterior svg {
+  transform: rotate(180deg);
+}
+.agenda__lista {
+  padding: 12px 24px;
+}
+.atendimento {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+}
+.atendimento__horario {
+  width: 54px;
+  flex: none;
+  padding-top: 15px;
+}
+.atendimento__horario strong {
+  display: block;
+  font-size: 14px;
+}
+.atendimento__horario small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.atendimento__cartao {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f8faf6;
+  border: 1px solid var(--line);
+  border-left: 3px solid #99ad80;
+  padding: 18px;
+  border-radius: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.atendimento--realizado .atendimento__cartao {
+  background: #f1f6ee;
+}
+.atendimento--falta .atendimento__cartao {
+  border-left-color: #cfa57a;
+  background: #fcf7ef;
+}
+.atendimento--cancelado .atendimento__cartao {
+  border-left-color: #bac0b5;
+}
+.atendimento__aluno {
+  flex: 1;
+  min-width: 100px;
+}
+.atendimento__aluno h2 {
+  font-size: 13px;
+  margin: 0 0 6px;
+}
+.atendimento__aluno p {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0;
+}
+.atendimento__aluno p svg {
+  flex: none;
+}
+.atendimento__aluno > .etiqueta {
+  margin-top: 10px;
+}
+.atendimento__acoes {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  flex-basis: 100%;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.atendimento__acoes .botao-texto {
+  font-size: 11px;
+}
+@media (max-width: 480px) {
+  .agenda__lista {
+    padding: 8px 12px;
+  }
+  .atendimento {
+    gap: 10px;
+  }
+  .atendimento__cartao {
+    padding: 13px;
+    gap: 10px;
+  }
+  .atendimento__cartao > .avatar {
+    display: none;
+  }
+  .agenda__barra-ferramentas {
+    padding: 15px 10px;
+  }
+  .agenda__data {
+    gap: 2px;
+  }
+  .agenda__data .entrada {
+    width: 137px;
+    font-size: 12px;
+  }
+  .atendimento__acoes {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .atendimento__cartao > .etiqueta {
+    margin-top: 5px;
+  }
+}
