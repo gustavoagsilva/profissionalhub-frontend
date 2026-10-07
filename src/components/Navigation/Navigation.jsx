@@ -1,17 +1,16 @@
 import { NavLink, Link } from "react-router-dom";
 import { useContext } from "react";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
-import { initials } from "../../utils/demoData";
+import { initials } from "../../utils/formatters";
 import Icon from "../Icon/Icon";
 import "./Navigation.css";
 const links = [
   { path: "/painel", icon: "grid", name: "Visão geral" },
   { path: "/alunos", icon: "users", name: "Alunos" },
   { path: "/agenda", icon: "calendar", name: "Agenda" },
-  { path: "/pendencias", icon: "wallet", name: "Pendências" },
   { path: "/locais", icon: "pin", name: "Explorar locais" },
 ];
-export default function Navigation({ onSignOut, open, onClose, pending }) {
+export default function Navigation({ onSignOut, open, onClose }) {
   const user = useContext(CurrentUserContext);
   return (
     <>
@@ -57,9 +56,6 @@ export default function Navigation({ onSignOut, open, onClose, pending }) {
             >
               <Icon name={link.icon} size={19} />
               <span>{link.name}</span>
-              {link.path === "/pendencias" && pending > 0 && (
-                <small className="menu-lateral__quantidade">{pending}</small>
-              )}
             </NavLink>
           ))}
         </nav>
@@ -72,7 +68,7 @@ export default function Navigation({ onSignOut, open, onClose, pending }) {
           <span className="avatar avatar--salvia">{initials(user.name)}</span>
           <div>
             <strong>{user.name}</strong>
-            <small>Conta de demonstração</small>
+            <small>Minha conta</small>
           </div>
           <button
             className="botao-icone"

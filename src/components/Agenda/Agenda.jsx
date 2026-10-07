@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "../Icon/Icon";
-import { DEMO_DATE, initials } from "../../utils/demoData";
+import { TODAY, initials } from "../../utils/formatters";
 import "./Agenda.css";
 const labels = {
   scheduled: "Agendada",
@@ -16,7 +16,7 @@ const statusClasses = {
 };
 
 export default function Agenda({ sessions, students, onNew, onStatus }) {
-  const [date, setDate] = useState(DEMO_DATE);
+  const [date, setDate] = useState(TODAY);
   const rows = sessions
     .filter((session) => session.date === date)
     .sort((a, b) => a.time.localeCompare(b.time));
@@ -66,7 +66,7 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
             </button>
             <button
               className="botao botao--contorno botao--pequeno"
-              onClick={() => setDate(DEMO_DATE)}
+              onClick={() => setDate(TODAY)}
             >
               Hoje
             </button>

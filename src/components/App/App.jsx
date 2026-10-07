@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   BrowserRouter,
   Link,
@@ -8,260 +8,154 @@ import {
   useLocation,
 } from "react-router-dom";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
+import * as api from "../../utils/MainApi";
+import { initials } from "../../utils/formatters";
 import Main from "../Main/Main";
 import AuthModal from "../AuthModal/AuthModal";
 import Navigation from "../Navigation/Navigation";
-import Dashboard from "../Dashboard/Dashboard";
-import Students from "../Students/Students";
-import Agenda from "../Agenda/Agenda";
-import Pending from "../Pending/Pending";
-import Locations from "../Locations/Locations";
-import EntryForm from "../EntryForm/EntryForm";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
-import Modal from "../Modal/Modal";
+import Preloader from "../Preloader/Preloader";
 import Icon from "../Icon/Icon";
-import {
-  DEMO_DATE,
-  initialStudents,
-  initialSessions,
-  initialCharges,
-  initialMakeups,
-  initialLocations,
-  initials,
-} from "../../utils/demoData";
 import "./App.css";
-const DEMO_USER_KEY = "profissionalhub:demo-user";
+const TOKEN_KEY = "profissionalhub:token";
 const pages = {
   "/painel": "Visão geral",
   "/alunos": "Alunos",
   "/agenda": "Agenda",
-  "/pendencias": "Pendências",
   "/locais": "Explorar locais",
 };
-function readDemoUser() {
-  try {
-    const user = JSON.parse(sessionStorage.getItem(DEMO_USER_KEY));
-    return typeof user?.name === "string" && user.name.trim()
-      ? { name: user.name }
-      : null;
-  } catch {
-    return null;
-  }
-}
 function Application() {
   const history = useHistory();
   const location = useLocation();
-  const [currentUser, setCurrentUser] = useState(readDemoUser);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [checking, setChecking] = useState(true);
+  const [sessionError, setSessionError] = useState("");
+  const [retry, setRetry] = useState(0);
   const [authMode, setAuthMode] = useState(null);
+  const [authError, setAuthError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [entryForm, setEntryForm] = useState(null);
-  const [occurrence, setOccurrence] = useState(null);
-  const [grantMakeup, setGrantMakeup] = useState(false);
   const [notice, setNotice] = useState("");
-  const [students, setStudents] = useState(initialStudents);
-  const [sessions, setSessions] = useState(initialSessions);
-  const [charges, setCharges] = useState(initialCharges);
-  const [makeups, setMakeups] = useState(initialMakeups);
-  const [locations, setLocations] = useState(initialLocations);
   const activeMode = authMode || (location.state?.openLogin ? "login" : null);
   useEffect(() => {
-    if (!notice) return;
-    const timeout = setTimeout(() => setNotice(""), 5000);
-    return () => clearTimeout(timeout);
-  }, [notice]);
+    const controller = new AbortController();
+    async function restore() {
+      try {
+        sessionStorage.removeItem("profissionalhub:demo-user");
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token)
+          setCurrentUser(await api.getCurrentUser(token, controller.signal));
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        if (error.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          setNotice("Sua sessão expirou. Entre novamente.");
+        } else
+          setSessionError(
+            "Não foi possível verificar sua sessão. Tente novamente.",
+          );
+      } finally {
+        if (!controller.signal.aborted) setChecking(false);
+      }
+    }
+    restore();
+    return () => controller.abort();
+  }, [retry]);
   useEffect(() => {
     document.title =
       (pages[location.pathname] ? pages[location.pathname] + " · " : "") +
       "ProfissionalHub";
   }, [location.pathname]);
   useEffect(() => {
-    const close = (event) => {
-      if (event.key === "Escape") setMobileOpen(false);
-    };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, []);
+    if (!notice) return;
+    const timeout = setTimeout(() => setNotice(""), 7000);
+    return () => clearTimeout(timeout);
+  }, [notice]);
   const closeAuth = () => {
+    if (submitting.current) return;
     setAuthMode(null);
+    setAuthError("");
     if (location.state?.openLogin) history.replace("/", {});
   };
-  const enter = (user = { name: "Gustavo" }) => {
-    const profile = { name: user.name };
-    setCurrentUser(profile);
-    try {
-      sessionStorage.setItem(DEMO_USER_KEY, JSON.stringify(profile));
-    } catch {
-      /* A prévia continua disponível sem persistência de sessão. */
+  const openAuth = (mode) => {
+    if (currentUser) {
+      history.push("/painel");
+      return;
     }
-    setAuthMode(null);
-    history.push("/painel");
-    setNotice("Demonstração aberta. Nenhuma conta real foi criada.");
+    setAuthError("");
+    setAuthMode(mode);
+  };
+  const enter = async (values) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true);
+    setAuthError("");
+    let registered = false;
+    try {
+      if (activeMode === "register") {
+        await api.signup(values);
+        registered = true;
+      }
+      const { token } = await api.signin({
+        email: values.email,
+        password: values.password,
+      });
+      if (!token)
+        throw new Error("Resposta de login inválida. Tente novamente.");
+      const user = await api.getCurrentUser(token);
+      localStorage.setItem(TOKEN_KEY, token);
+      setCurrentUser(user);
+      setAuthMode(null);
+      const destination = location.state?.from;
+      history.replace(pages[destination] ? destination : "/painel", {});
+      setNotice(
+        registered ? "Conta criada com sucesso." : "Você entrou na sua conta.",
+      );
+    } catch (error) {
+      if (registered) {
+        setAuthMode("login");
+        setAuthError(
+          "Sua conta foi criada, mas não foi possível entrar. Use seu e-mail e senha para tentar novamente.",
+        );
+      } else setAuthError(error.message);
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
   };
   const signOut = () => {
+    localStorage.removeItem(TOKEN_KEY);
     setCurrentUser(null);
     setAuthMode(null);
-    try {
-      sessionStorage.removeItem(DEMO_USER_KEY);
-    } catch {
-      /* O estado em memória é encerrado mesmo sem acesso ao armazenamento. */
-    }
-    setStudents(initialStudents);
-    setSessions(initialSessions);
-    setCharges(initialCharges);
-    setMakeups(initialMakeups);
-    setLocations(initialLocations);
     setMobileOpen(false);
-    setEntryForm(null);
-    setOccurrence(null);
     history.push("/");
-    setNotice("Você saiu da demonstração.");
+    setNotice("Você saiu da sua conta.");
   };
-  const newSession = (date = DEMO_DATE) =>
-    setEntryForm({ kind: "session", entry: { date } });
-  const saveEntry = (values) => {
-    const id = crypto.randomUUID();
-    if (entryForm.kind === "student") {
-      if (values.name.trim().length < 2)
-        return "Informe um nome com pelo menos dois caracteres.";
-      const data = {
-        id: values.id || id,
-        name: values.name.trim(),
-        email: values.email.trim(),
-        phone: values.phone.trim(),
-        goal: values.goal.trim(),
-        active: values.active ?? true,
-        color: values.color || "salvia",
-      };
-      setStudents((items) =>
-        values.id
-          ? items.map((item) => (item.id === values.id ? data : item))
-          : [...items, data],
-      );
-    } else if (entryForm.kind === "session") {
-      if (values.time >= values.end)
-        return "O término precisa ser depois do início.";
-      if (
-        !students.some(
-          (student) => student.id === values.studentId && student.active,
-        )
-      )
-        return "Selecione um aluno ativo.";
-      if (
-        sessions.some(
-          (session) =>
-            session.date === values.date &&
-            session.status !== "cancelled" &&
-            session.status !== "missed" &&
-            values.time < session.end &&
-            values.end > session.time,
-        )
-      )
-        return "Já existe um atendimento neste intervalo. Escolha outro horário.";
-      if (
-        values.makeupId &&
-        !makeups.some(
-          (makeup) =>
-            makeup.id === values.makeupId && makeup.status === "pending",
-        )
-      )
-        return "Esta reposição já foi agendada.";
-      setSessions((items) => [
-        ...items,
-        {
-          id,
-          studentId: values.studentId,
-          date: values.date,
-          time: values.time,
-          end: values.end,
-          location: values.location,
-          status: "scheduled",
-          ...(values.makeupId ? { makeupId: values.makeupId } : {}),
-        },
-      ]);
-      if (values.makeupId)
-        setMakeups((items) =>
-          items.map((item) =>
-            item.id === values.makeupId
-              ? { ...item, status: "scheduled" }
-              : item,
-          ),
-        );
-    } else {
-      if (!Number.isFinite(Number(values.amount)) || Number(values.amount) <= 0)
-        return "Informe um valor maior que zero.";
-      setCharges((items) => [
-        ...items,
-        {
-          id,
-          studentId: values.studentId,
-          description: values.description.trim(),
-          amount: Math.round(Number(values.amount) * 100) / 100,
-          due: values.due,
-          paid: false,
-        },
-      ]);
-    }
-    setEntryForm(null);
-    setNotice("Salvo na demonstração. As alterações são temporárias.");
-    return "";
-  };
-  const applyStatus = (session, status, grant = false) => {
-    if (sessions.find((item) => item.id === session.id)?.status !== "scheduled")
-      return;
-    setSessions((items) =>
-      items.map((item) =>
-        item.id === session.id ? { ...item, status } : item,
-      ),
+  if (checking) return <Preloader label="Verificando sua sessão…" />;
+  if (sessionError)
+    return (
+      <main className="pagina-nao-encontrada">
+        <h1>Não conseguimos conectar</h1>
+        <p role="alert">{sessionError}</p>
+        <button
+          className="botao botao--principal"
+          onClick={() => {
+            setSessionError("");
+            setChecking(true);
+            setRetry(retry + 1);
+          }}
+        >
+          Tentar novamente
+        </button>
+      </main>
     );
-    if (session.makeupId)
-      setMakeups((items) =>
-        items.map((item) =>
-          item.id === session.makeupId
-            ? {
-                ...item,
-                status: status === "completed" ? "completed" : "pending",
-              }
-            : item,
-        ),
-      );
-    else if (grant && status !== "completed")
-      setMakeups((items) => [
-        ...items,
-        {
-          id: crypto.randomUUID(),
-          studentId: session.studentId,
-          sourceSessionId: session.id,
-          reason:
-            status === "missed"
-              ? "Falta com reposição autorizada"
-              : "Cancelamento com reposição autorizada",
-          status: "pending",
-        },
-      ]);
-    setOccurrence(null);
-    setNotice(
-      status === "completed"
-        ? "Atendimento concluído na demonstração."
-        : "Ocorrência registrada na demonstração.",
-    );
-  };
-  const sessionStatus = (session, status) => {
-    if (status === "completed") applyStatus(session, status);
-    else {
-      setGrantMakeup(false);
-      setOccurrence({ session, status });
-    }
-  };
-  const pendingCount =
-    charges.filter((charge) => !charge.paid).length +
-    makeups.filter((makeup) => makeup.status === "pending").length;
   const workspace = (
     <div className="area-profissional">
       <Navigation
         onSignOut={signOut}
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        pending={pendingCount}
       />
       <div className="area-profissional__corpo">
         <header className="area-profissional__cabecalho">
@@ -292,91 +186,31 @@ function Application() {
             </span>
           </div>
         </header>
-        <div className="aviso-demonstracao">
-          <Icon name="spark" size={14} />
-          <span>
-            <strong>Modo demonstração</strong> · Dados fictícios e alterações
-            temporárias. A busca de locais usa a Geoapify real.
-          </span>
-        </div>
         <main className="area-profissional__conteudo" id="conteudo">
-          <Switch>
-            <Route exact path="/painel">
-              <Dashboard
-                students={students}
-                sessions={sessions}
-                charges={charges}
-                onNewSession={() => newSession()}
-              />
-            </Route>
-            <Route exact path="/alunos">
-              <Students
-                students={students}
-                onNew={() => setEntryForm({ kind: "student" })}
-                onEdit={(entry) => setEntryForm({ kind: "student", entry })}
-                onToggle={(id) => {
-                  setStudents((items) =>
-                    items.map((item) =>
-                      item.id === id ? { ...item, active: !item.active } : item,
-                    ),
-                  );
-                  setNotice(
-                    "Status do aluno atualizado. O histórico foi preservado.",
-                  );
-                }}
-              />
-            </Route>
-            <Route exact path="/agenda">
-              <Agenda
-                sessions={sessions}
-                students={students}
-                onNew={newSession}
-                onStatus={sessionStatus}
-              />
-            </Route>
-            <Route exact path="/pendencias">
-              <Pending
-                charges={charges}
-                makeups={makeups}
-                students={students}
-                onPaid={(id) => {
-                  setCharges((items) =>
-                    items.map((item) =>
-                      item.id === id
-                        ? { ...item, paid: true, paidAt: DEMO_DATE }
-                        : item,
-                    ),
-                  );
-                  setNotice("Pagamento registrado na demonstração.");
-                }}
-                onSchedule={(makeup) =>
-                  setEntryForm({
-                    kind: "session",
-                    entry: { studentId: makeup.studentId, makeupId: makeup.id },
-                  })
-                }
-                onNewCharge={() => setEntryForm({ kind: "charge" })}
-              />
-            </Route>
-            <Route exact path="/locais">
-              <Locations
-                saved={locations}
-                onSave={(place) => {
-                  setLocations((items) =>
-                    items.some((item) => item.id === place.id)
-                      ? items
-                      : [...items, place],
-                  );
-                  setNotice(
-                    "Local adicionado à lista temporária de atendimento.",
-                  );
-                }}
-              />
-            </Route>
-          </Switch>
+          <div className="cabecalho-pagina">
+            <div>
+              <h1>
+                {location.pathname === "/painel"
+                  ? "Olá, " + currentUser?.name
+                  : pages[location.pathname]}
+              </h1>
+              <p>
+                {location.pathname === "/painel"
+                  ? "Você está conectado à sua conta."
+                  : "Esta área estará disponível em breve."}
+              </p>
+            </div>
+          </div>
+          <section className="secao estado-vazio">
+            <Icon name="calendar" size={32} />
+            <h2>Estamos preparando seu espaço</h2>
+            <p>
+              O acesso à conta já está disponível. Alunos, agenda e locais serão
+              liberados em breve.
+            </p>
+          </section>
           <footer className="area-profissional__rodape">
             <span>ProfissionalHub · Sua rotina em equilíbrio.</span>
-            <span>Feito para quem cuida do movimento.</span>
           </footer>
         </main>
       </div>
@@ -394,9 +228,8 @@ function Application() {
         <Route exact path="/">
           <Main
             onSignOut={signOut}
-            onLogin={() => setAuthMode("login")}
-            onRegister={() => setAuthMode("register")}
-            onDemo={() => enter()}
+            onLogin={() => openAuth("login")}
+            onRegister={() => openAuth("register")}
           />
         </Route>
         <ProtectedRoute user={currentUser} path={Object.keys(pages)} exact>
@@ -404,9 +237,7 @@ function Application() {
         </ProtectedRoute>
         <Route>
           <main className="pagina-nao-encontrada">
-            <Icon name="pin" size={42} />
             <h1>Esse caminho ainda não existe.</h1>
-            <p>Volte para continuar organizando sua rotina.</p>
             <Link
               className="botao botao--principal"
               to={currentUser ? "/painel" : "/"}
@@ -416,93 +247,22 @@ function Application() {
           </main>
         </Route>
       </Switch>
-      {activeMode && (
+      {activeMode && !currentUser && (
         <AuthModal
-          key={activeMode}
           mode={activeMode}
           onClose={closeAuth}
-          onModeChange={setAuthMode}
+          onModeChange={openAuth}
           onEnter={enter}
+          busy={busy}
+          error={authError}
         />
-      )}
-      {entryForm && (
-        <EntryForm
-          key={entryForm.kind + (entryForm.entry?.id || "")}
-          kind={entryForm.kind}
-          entry={entryForm.entry}
-          students={students}
-          locations={locations}
-          onClose={() => setEntryForm(null)}
-          onSave={saveEntry}
-        />
-      )}
-      {occurrence && (
-        <Modal
-          title={
-            occurrence.status === "missed"
-              ? "Registrar falta"
-              : "Cancelar atendimento"
-          }
-          subtitle="Confirme o resultado deste atendimento."
-          onClose={() => setOccurrence(null)}
-        >
-          <div className="ocorrencia">
-            {occurrence.session.makeupId ? (
-              <p>
-                Esta sessão é uma reposição. Ela voltará à lista de reposições a
-                agendar.
-              </p>
-            ) : (
-              <label className="ocorrencia__opcao">
-                <input
-                  type="checkbox"
-                  checked={grantMakeup}
-                  onChange={(event) => setGrantMakeup(event.target.checked)}
-                />
-                Autorizar uma reposição para o aluno
-              </label>
-            )}
-            <div className="formulario__acoes">
-              <button
-                className="botao botao--contorno"
-                onClick={() => setOccurrence(null)}
-              >
-                Voltar
-              </button>
-              <button
-                className="botao botao--principal"
-                onClick={() =>
-                  applyStatus(
-                    occurrence.session,
-                    occurrence.status,
-                    grantMakeup,
-                  )
-                }
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </Modal>
       )}
       <div
         className={"notificacao" + (notice ? " notificacao--visivel" : "")}
         role="status"
         aria-live="polite"
       >
-        {notice && (
-          <>
-            <Icon name="check" size={18} />
-            <span>{notice}</span>
-            <button
-              className="botao-icone"
-              aria-label="Dispensar mensagem"
-              onClick={() => setNotice("")}
-            >
-              <Icon name="close" size={15} />
-            </button>
-          </>
-        )}
+        {notice}
       </div>
     </CurrentUserContext.Provider>
   );

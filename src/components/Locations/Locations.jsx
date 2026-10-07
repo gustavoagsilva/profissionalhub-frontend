@@ -238,7 +238,7 @@ export default function Locations({ saved, onSave }) {
       )}
       <div className="titulo-secao">
         <h2>Meus locais de atendimento</h2>
-        <span>Lista temporária da demonstração</span>
+        <span>Seus espaços de atendimento</span>
       </div>
       <div className="locais-salvos">
         {saved.map((place) => (

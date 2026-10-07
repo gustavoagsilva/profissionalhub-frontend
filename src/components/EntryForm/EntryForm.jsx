@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Modal from "../Modal/Modal";
-import { DEMO_DATE } from "../../utils/demoData";
+import { TODAY } from "../../utils/formatters";
 export default function EntryForm({
   kind,
   students,
@@ -15,20 +15,16 @@ export default function EntryForm({
     phone: "",
     goal: "",
     studentId: students.find((student) => student.active)?.id || "",
-    date: DEMO_DATE,
+    date: TODAY,
     time: "10:00",
     end: "11:00",
     location: locations[0]?.name || "",
-    amount: "",
-    due: DEMO_DATE,
-    description: "Atendimento",
     ...entry,
   }));
   const [error, setError] = useState("");
   const titles = {
     student: entry?.id ? "Editar aluno" : "Um novo aluno por perto.",
-    session: entry?.makeupId ? "Agendar reposição" : "Novo atendimento",
-    charge: "Nova cobrança",
+    session: "Novo atendimento",
   };
   const input = (name, label, type = "text", extra = {}) => (
     <div className="campo" key={name}>
@@ -52,7 +48,7 @@ export default function EntryForm({
   return (
     <Modal
       title={titles[kind]}
-      subtitle="Dados de demonstração. As alterações duram enquanto esta página estiver aberta."
+      subtitle="Preencha os dados do atendimento ou aluno."
       onClose={onClose}
     >
       <form
@@ -87,7 +83,6 @@ export default function EntryForm({
                 className="entrada"
                 value={values.studentId}
                 required
-                disabled={Boolean(entry?.makeupId)}
                 onChange={(event) =>
                   setValues({ ...values, studentId: event.target.value })
                 }
@@ -104,7 +99,7 @@ export default function EntryForm({
                   ))}
               </select>
             </div>
-            {kind === "session" ? (
+            {kind === "session" && (
               <>
                 {input("date", "Data", "date")}
                 <div className="formulario__linha">
@@ -131,15 +126,6 @@ export default function EntryForm({
                     ))}
                   </select>
                 </div>
-              </>
-            ) : (
-              <>
-                {input("description", "Descrição")}
-                {input("amount", "Valor (R$)", "number", {
-                  min: "0.01",
-                  step: "0.01",
-                })}
-                {input("due", "Vencimento", "date")}
               </>
             )}
           </>

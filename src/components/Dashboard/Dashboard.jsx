@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DEMO_DATE, initials } from "../../utils/demoData";
+import { TODAY, initials } from "../../utils/formatters";
 import Icon from "../Icon/Icon";
 import "./Dashboard.css";
 
@@ -9,17 +9,11 @@ const sessionStatus = {
   missed: { label: "Falta", color: "laranja" },
 };
 
-export default function Dashboard({
-  students,
-  sessions,
-  charges,
-  onNewSession,
-}) {
+export default function Dashboard({ students, sessions, onNewSession }) {
   const activeStudents = students.filter((student) => student.active);
-  const unpaidCharges = charges.filter((charge) => !charge.paid);
   const todaySessions = sessions
     .filter(
-      (session) => session.date === DEMO_DATE && session.status !== "cancelled",
+      (session) => session.date === TODAY && session.status !== "cancelled",
     )
     .sort((first, second) => first.time.localeCompare(second.time));
 
@@ -45,10 +39,6 @@ export default function Dashboard({
           <h2 className="resumo__rotulo">Atendimentos hoje</h2>
           <strong className="resumo__valor">{todaySessions.length}</strong>
         </article>
-        <article className="resumo">
-          <h2 className="resumo__rotulo">Cobranças em aberto</h2>
-          <strong className="resumo__valor">{unpaidCharges.length}</strong>
-        </article>
       </div>
 
       <section className="secao">
@@ -56,7 +46,7 @@ export default function Dashboard({
           <div>
             <h2>Atendimentos de hoje</h2>
             <p>
-              {new Date(DEMO_DATE + "T12:00:00").toLocaleDateString("pt-BR", {
+              {new Date(TODAY + "T12:00:00").toLocaleDateString("pt-BR", {
                 day: "numeric",
                 month: "long",
               })}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "../Icon/Icon";
-import { initials } from "../../utils/demoData";
+import { initials } from "../../utils/formatters";
 import "./Students.css";
 export default function Students({ students, onNew, onEdit, onToggle }) {
   const [query, setQuery] = useState("");

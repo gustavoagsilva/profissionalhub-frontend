@@ -1,6 +1,6 @@
 import "./About.css";
 import Icon from "../Icon/Icon";
-export default function About({ onDemo }) {
+export default function About({ onRegister }) {
   return (
     <section id="sobre" className="sobre">
       <div>
@@ -12,12 +12,12 @@ export default function About({ onDemo }) {
           próprio trabalho.
         </p>
         <p>
-          Reúna sua agenda, acompanhe pagamentos e reposições e encontre locais
-          para atender em um só lugar. Uma forma simples de organizar os
-          detalhes da rotina e dedicar mais atenção aos seus alunos.
+          Reúna sua agenda, organize seus alunos e encontre locais para atender
+          em um só lugar. Uma forma simples de organizar os detalhes da rotina e
+          dedicar mais atenção aos seus alunos.
         </p>
       </div>
-      <button className="botao botao--contorno" onClick={onDemo}>
+      <button className="botao botao--contorno" onClick={onRegister}>
         Conhecer por dentro
         <Icon name="arrow" size={18} />
       </button>

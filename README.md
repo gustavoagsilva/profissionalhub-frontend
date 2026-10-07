@@ -1,90 +1,74 @@
-# ProfissionalHub — Frontend
+﻿# ProfissionalHub — Frontend
 
-Aplicação para organizar a rotina de profissionais de Educação Física autônomos. Primeira versão visual e navegável, com operações temporárias de demonstração e integração real com Geoapify.
+Aplicação para organizar a rotina de profissionais de Educação Física autônomos. A etapa atual conecta o frontend à autenticação da API própria.
 
 ## Executar localmente
 
 Validado com Node.js 24.15.0 e npm 11.12.1.
 
-1. Abra um terminal na pasta `profissionalhub-frontend` e execute `npm ci`.
-2. Copie `.env.example` para `.env` e preencha `VITE_GEOAPIFY_API_KEY`. Salve como UTF-8 sem BOM.
-3. Execute `npm run dev` e abra o endereço informado pelo Vite. Reinicie o servidor se alterar o `.env`.
+1. Na pasta `profissionalhub-frontend`, execute `npm ci`.
+2. Copie `.env.example` para `.env`.
+3. Configure `VITE_API_URL` com o endereço do backend. Por padrão, usamos `https://profissionalhub-backend.onrender.com`. Para um backend local, use `http://localhost:3000`.
+4. Execute `npm run dev -- --port 5173` e abra o endereço informado. O backend precisa permitir essa origem em `ALLOWED_ORIGINS`.
+5. Reinicie o Vite após alterar o `.env`.
 
-O arquivo `.env` é ignorado pelo Git. Variáveis com prefixo `VITE_` fazem parte do frontend compilado: a chave Geoapify precisa ter restrições de origem/domínio no painel do fornecedor antes da publicação. Sem a chave, a demonstração funciona e a busca informa a configuração ausente.
+O `.env` é ignorado pelo Git. As variáveis `VITE_` são públicas no frontend compilado: nunca coloque nelas a senha do MongoDB ou o segredo JWT. `VITE_GEOAPIFY_API_KEY` será usada quando a área de locais for conectada novamente; restrinja a chave por origem no fornecedor antes da publicação.
 
-## O que já funciona
+## Disponível nesta etapa
 
-- Apresentação pública, informações sobre o autor e interface responsiva.
-- Modais de cadastro e login com validação, mensagens, exibição de senha, fechamento por Escape e navegação por teclado.
-- Entrada direta pelo botão “Explorar demonstração”.
-- Painel simples com três contagens (alunos ativos, atendimentos de hoje e cobranças em aberto), lista do dia e botão de agendamento.
-- Cadastro, edição, busca e ativação/inativação de alunos.
-- Agenda diária com agendamento e bloqueio de sobreposição de horários.
-- Registro de realização, falta e cancelamento; concessão manual de reposição.
-- Reposição com estados a agendar, agendada e concluída. Cancelar a sessão de reposição reabre a pendência.
-- Cobranças manuais e registro de pagamento integral.
-- Geoapify: busca real de locais por categoria em um raio de 15 km do centro de São Paulo, até 18 resultados exibidos de três em três, seleção de dois locais e cálculo real de deslocamento de carro.
-- Salvamento temporário de locais para utilização na agenda.
-- Carregamento, erro, nenhum resultado e cancelamento de requisições ao sair da página.
+- Apresentação pública responsiva, sem acesso demonstrativo.
+- Cadastro real, seguido de login automático.
+- Login com validação, senha visível/oculta, carregamento e erros do servidor.
+- JWT no `localStorage`, com perfil validado por `GET /users/me` ao abrir ou recarregar o aplicativo.
+- Rotas protegidas: o acesso sem sessão abre o login e preserva o destino após autenticação.
+- Logout com limpeza do token e do perfil.
+- Sessão inválida removida; falha temporária de conexão mantém o token e oferece nova tentativa.
+- Cadastro bem-sucedido seguido de falha no login encaminha para uma nova tentativa de entrada, sem solicitar outro cadastro.
 
-## Limites desta versão
+A API gratuita pode levar cerca de um minuto para responder no primeiro acesso.
 
-**Não existe autenticação real.** O formulário simula a entrada para avaliação visual. Não cria contas, não envia credenciais e não salva senhas. Use somente dados fictícios.
+## Próximos blocos de integração
 
-O nome da conta demonstrativa fica no `sessionStorage`. Os dados operacionais ficam apenas na memória: recarregar a página ou sair restaura a demonstração inicial. A proteção de rotas é exclusivamente visual e não constitui segurança de backend. JWT e integração com a API própria serão implementados nas próximas etapas.
+**Alunos, agenda e locais estão temporariamente indisponíveis na interface.** Os componentes existentes foram preservados para integração posterior, mas não há operações locais simulando persistência nem registros fictícios. O painel apresenta uma mensagem de disponibilidade, sem inventar contagens para dados ainda não carregados.
 
-A busca Geoapify retorna dados reais; os demais registros iniciais são fictícios. As estimativas de viagem não representam garantia de trânsito em tempo real. Conferir acesso e disponibilidade com cada local.
-
-Esta versão ainda não representa uma entrega final do curso. Permanecem pendentes autenticação/API própria, persistência, refinamentos das regras e telas, revisão completa de critérios e deploy. O repositório frontend já está publicado no GitHub.
-
-## Integração Geoapify
-
-- GET `/v2/places`: busca de locais por categoria.
-- POST `/v1/routematrix`: distância e tempo estimados entre dois locais.
-- As chamadas ficam em `src/utils/ThirdPartyApi.js`, com timeout e cancelamento.
+Pagamentos e reposições estão fora do escopo desta versão. Publicação do frontend e testes no domínio definitivo ainda estão pendentes.
 
 ## Rotas
 
-| Rota          | Conteúdo                         |
-| ------------- | -------------------------------- |
-| `/`           | Apresentação pública e modais    |
-| `/painel`     | Visão geral                      |
-| `/alunos`     | Gestão de alunos                 |
-| `/agenda`     | Agenda diária                    |
-| `/pendencias` | Cobranças e reposições           |
-| `/locais`     | Geoapify e locais de atendimento |
+| Rota      | Estado atual                       |
+| --------- | ---------------------------------- |
+| `/`       | Apresentação e autenticação        |
+| `/painel` | Identificação da conta autenticada |
+| `/alunos` | Protegida, aguardando integração   |
+| `/agenda` | Protegida, aguardando integração   |
+| `/locais` | Protegida, aguardando integração   |
 
-As rotas internas exigem uma sessão demonstrativa. Acesso direto sem sessão redireciona para a página pública e abre a modal de login. Um futuro servidor de produção precisa redirecionar rotas do frontend para `index.html`.
-
-## Comandos
-
-| Comando                | Finalidade                  |
-| ---------------------- | --------------------------- |
-| `npm run dev`          | Servidor de desenvolvimento |
-| `npm run lint`         | ESLint                      |
-| `npm run build`        | Build de produção em dist/  |
-| `npm run preview`      | Visualização local do build |
-| `npm run format`       | Formatar o código em src/   |
-| `npm run format:check` | Verificar formatação        |
+O servidor de hospedagem do frontend deve redirecionar essas rotas para `index.html`. A autorização dos dados é responsabilidade do backend; o componente de proteção controla a navegação da interface.
 
 ## Organização
 
-- `src/components`: componentes, páginas e estilos.
-- `src/contexts/CurrentUserContext.js`: perfil demonstrativo compartilhado.
-- `src/utils/demoData.js`: dados fictícios e formatação.
-- `src/utils/ThirdPartyApi.js`: chamadas HTTP à Geoapify.
-- `src/index.css`: tipografia local, variáveis, estilos compartilhados e acessibilidade.
+- `src/components/App/App.jsx`: solicitações de autenticação, sessão e navegação.
+- `src/components/AuthModal`: formulário compartilhado de cadastro e login.
+- `src/components/ProtectedRoute`: redirecionamento de visitantes sem sessão.
+- `src/contexts/CurrentUserContext.js`: perfil retornado pela API.
+- `src/utils/MainApi.js`: chamadas `fetch` para `/signup`, `/signin` e `/users/me`.
+- `src/utils/formatters.js`: formatação de nomes, datas e valores, sem dados fictícios.
+- `src/utils/ThirdPartyApi.js`: integração Geoapify preservada para o próximo bloco.
 
-React, React Router 5, Vite, ESLint e Prettier. O normalize.css é carregado antes dos estilos do projeto para padronizar os estilos iniciais dos navegadores. Fonte Manrope distribuída por @fontsource, com arquivos WOFF/WOFF2 e carregamento local via @font-face.
+React, React Router 5, Vite, CSS com BEM, normalize.css e fonte Manrope local com `@font-face`.
 
-## Validação
+## Verificação
 
-Lint, build e testes de navegador no Edge sem interface gráfica. Os fluxos incluem cadastro/login demonstrativos, campos inválidos, ausência de persistência de senha, criação de aluno, conflitos de agenda, conclusão de reposição, quitação, saída e proteção de rota. Verificação de ausência de rolagem horizontal em 320 e 390 px.
+- `npm run lint`: análise estática.
+- `npm run build`: compilação de produção.
+- `npm run format:check`: formatação.
 
-A Geoapify foi testada com GET e POST reais. Estados vazios e erro HTTP foram simulados. Scripts de validação e capturas ficam fora do repositório, na pasta local de validação do ProfissionalHub; não há comando `npm test` configurado. Testes em aparelhos físicos e no domínio publicado ainda pendentes.
+Neste bloco, testes de navegador no Edge cobriram cadastro, login automático, credenciais inválidas, rota direta, recarregamento, expiração, indisponibilidade com nova tentativa, cadastro seguido de falha de login e saída. Os erros foram reproduzidos com respostas controladas. Cadastro, login, JWT, recarregamento e conta sem alunos também foram verificados com o backend Express e MongoDB locais, em banco isolado removido após o teste.
 
-## Créditos e desenvolvimento
+As larguras de 320, 390 e 1440 px foram verificadas no painel. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
+
+## Créditos
 
 Dados de locais: [Geoapify](https://www.geoapify.com/) e [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Desenvolvido por Gustavo Augusto.
 
-Trabalho na branch `stage-react-api`; submeter pull request para `main` conforme as etapas do curso.
+Etapa atual: branch `stage-react-auth`. A entrega final será uma pull request para `main`.

@@ -2,7 +2,14 @@ import { useState } from "react";
 import Modal from "../Modal/Modal";
 import Icon from "../Icon/Icon";
 import "./AuthModal.css";
-export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
+export default function AuthModal({
+  mode,
+  onClose,
+  onModeChange,
+  onEnter,
+  busy,
+  error,
+}) {
   const register = mode === "register";
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const [touched, setTouched] = useState({});
@@ -15,7 +22,12 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)
       ? ""
       : "Informe um e-mail válido.",
-    password: values.password.length < 8 ? "Use pelo menos 8 caracteres." : "",
+    password:
+      values.password.length < 8
+        ? "Use pelo menos 8 caracteres."
+        : new TextEncoder().encode(values.password).length > 72
+          ? "A senha deve ter no máximo 72 bytes."
+          : "",
   };
   const valid =
     !errors.email && !errors.password && (!register || !errors.name);
@@ -58,21 +70,15 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
       }
       onClose={onClose}
     >
-      <div className="autenticacao__demonstracao">
-        <Icon name="spark" size={16} />
-        <span>
-          Prévia visual: use dados fictícios. Nenhuma conta será criada e sua
-          senha não será salva.
-        </span>
-      </div>
       <form
         className="formulario"
         onSubmit={(event) => {
           event.preventDefault();
-          if (valid)
+          if (valid && !busy)
             onEnter({
-              name: register ? values.name.trim() : "Profissional",
-              email: values.email,
+              name: values.name.trim(),
+              email: values.email.trim().toLowerCase(),
+              password: values.password,
             });
         }}
         noValidate
@@ -89,6 +95,7 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
                 type={field.type}
                 value={values[field.name]}
                 placeholder={field.placeholder}
+                disabled={busy}
                 required
                 autoComplete={field.autoComplete}
                 maxLength={field.name === "name" ? 30 : undefined}
@@ -126,11 +133,21 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
             )}
           </div>
         ))}
+        {error && (
+          <p className="formulario__erro" role="alert">
+            {error}
+          </p>
+        )}
+        {busy && (
+          <p role="status">
+            Conectando. O primeiro acesso pode levar cerca de um minuto.
+          </p>
+        )}
         <button
           className="botao botao--principal botao--largura-total"
-          disabled={!valid}
+          disabled={!valid || busy}
         >
-          {register ? "Criar conta de demonstração" : "Entrar na demonstração"}
+          {busy ? "Aguarde…" : register ? "Criar conta" : "Entrar"}
           <Icon name="arrow" size={18} />
         </button>
       </form>
@@ -138,6 +155,7 @@ export default function AuthModal({ mode, onClose, onModeChange, onEnter }) {
         {register ? "Já tem uma conta?" : "Ainda não tem uma conta?"}{" "}
         <button
           className="botao-texto"
+          disabled={busy}
           onClick={() => onModeChange(register ? "login" : "register")}
         >
           {register ? "Entrar" : "Cadastre-se"}
