@@ -1,6 +1,6 @@
 ﻿# ProfissionalHub — Frontend
 
-Aplicação para organizar a rotina de profissionais de Educação Física autônomos. A etapa atual conecta o frontend à autenticação da API própria.
+Aplicação para organizar a rotina de profissionais de Educação Física autônomos. A etapa atual conecta o frontend à autenticação e à gestão de alunos da API própria.
 
 ## Executar localmente
 
@@ -27,9 +27,20 @@ O `.env` é ignorado pelo Git. As variáveis `VITE_` são públicas no frontend 
 
 A API gratuita pode levar cerca de um minuto para responder no primeiro acesso.
 
+## Gestão de alunos
+
+- Listagem exclusiva da conta autenticada, com carregamento, erro e nova tentativa.
+- Cadastro com nome (2–60 caracteres) e WhatsApp brasileiro obrigatórios. E-mail e objetivo (até 120 caracteres) são opcionais.
+- Prefixo +55 fixo e apresentação no formato +55 (11) 99999-9999. A validação confere formato de celular e DDD; não verifica se o número possui uma conta no WhatsApp.
+- Edição de WhatsApp, e-mail e objetivo. O nome permanece somente para leitura e não é enviado no PATCH.
+- Busca por nome/e-mail e filtros de ativos/inativos.
+- Ativação e inativação confirmadas pela API. Telefones duplicados, inclusive de inativos, e aulas futuras impedindo a inativação são informados ao usuário.
+- As alterações só aparecem na lista depois da resposta de sucesso do servidor. Erros no formulário preservam os dados digitados.
+- Uma resposta 401 encerra a sessão e solicita novo login. Sair limpa os dados de alunos e cancela solicitações pendentes no navegador.
+
 ## Próximos blocos de integração
 
-**Alunos, agenda e locais estão temporariamente indisponíveis na interface.** Os componentes existentes foram preservados para integração posterior, mas não há operações locais simulando persistência nem registros fictícios. O painel apresenta uma mensagem de disponibilidade, sem inventar contagens para dados ainda não carregados.
+**Agenda e locais estão temporariamente indisponíveis na interface.** Os componentes existentes foram preservados para integração posterior, mas não há operações locais simulando persistência nem registros fictícios. O painel apresenta uma mensagem de disponibilidade, sem inventar contagens para dados ainda não carregados.
 
 Pagamentos e reposições estão fora do escopo desta versão. Publicação do frontend e testes no domínio definitivo ainda estão pendentes.
 
@@ -39,7 +50,7 @@ Pagamentos e reposições estão fora do escopo desta versão. Publicação do f
 | --------- | ---------------------------------- |
 | `/`       | Apresentação e autenticação        |
 | `/painel` | Identificação da conta autenticada |
-| `/alunos` | Protegida, aguardando integração   |
+| `/alunos` | Gestão de alunos integrada à API   |
 | `/agenda` | Protegida, aguardando integração   |
 | `/locais` | Protegida, aguardando integração   |
 
@@ -49,9 +60,12 @@ O servidor de hospedagem do frontend deve redirecionar essas rotas para `index.h
 
 - `src/components/App/App.jsx`: solicitações de autenticação, sessão e navegação.
 - `src/components/AuthModal`: formulário compartilhado de cadastro e login.
+- `src/components/Students`: listagem, busca, filtros e ações de alunos.
+- `src/components/StudentForm`: cadastro e edição com validação.
+- `src/utils/studentPhone.js`: validação e apresentação do celular brasileiro.
 - `src/components/ProtectedRoute`: redirecionamento de visitantes sem sessão.
 - `src/contexts/CurrentUserContext.js`: perfil retornado pela API.
-- `src/utils/MainApi.js`: chamadas `fetch` para `/signup`, `/signin` e `/users/me`.
+- `src/utils/MainApi.js`: chamadas `fetch` de autenticação e operações GET/POST/PATCH em `/students`.
 - `src/utils/formatters.js`: formatação de nomes, datas e valores, sem dados fictícios.
 - `src/utils/ThirdPartyApi.js`: integração Geoapify preservada para o próximo bloco.
 
@@ -65,7 +79,9 @@ React, React Router 5, Vite, CSS com BEM, normalize.css e fonte Manrope local co
 
 Neste bloco, testes de navegador no Edge cobriram cadastro, login automático, credenciais inválidas, rota direta, recarregamento, expiração, indisponibilidade com nova tentativa, cadastro seguido de falha de login e saída. Os erros foram reproduzidos com respostas controladas. Cadastro, login, JWT, recarregamento e conta sem alunos também foram verificados com o backend Express e MongoDB locais, em banco isolado removido após o teste.
 
-As larguras de 320, 390 e 1440 px foram verificadas no painel. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
+A integração de alunos foi verificada no navegador com Express e MongoDB locais: criação, edição, persistência após recarregar, nome bloqueado, duplicidade de telefone de aluno inativo, ativação/inativação, bloqueio por aula futura e isolamento entre contas. Falhas de listagem e sessão expirada foram simuladas para verificar as mensagens e a recuperação.
+
+As larguras de 320, 390 e 1440 px foram verificadas no painel e na listagem de alunos. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
 
 ## Créditos
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   BrowserRouter,
   Link,
@@ -10,6 +10,8 @@ import {
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import * as api from "../../utils/MainApi";
 import { initials } from "../../utils/formatters";
+import Students from "../Students/Students";
+import StudentForm from "../StudentForm/StudentForm";
 import Main from "../Main/Main";
 import AuthModal from "../AuthModal/AuthModal";
 import Navigation from "../Navigation/Navigation";
@@ -37,6 +39,82 @@ function Application() {
   const submitting = useRef(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(true);
+  const [studentsError, setStudentsError] = useState("");
+  const [studentsRetry, setStudentsRetry] = useState(0);
+  const [studentForm, setStudentForm] = useState(null);
+  const [studentError, setStudentError] = useState("");
+  const [studentBusy, setStudentBusy] = useState(false);
+  const [busyStudentId, setBusyStudentId] = useState(null);
+  const studentRequest = useRef(null);
+  const expireSession = useCallback(() => {
+    studentRequest.current?.abort();
+    studentRequest.current = null;
+    localStorage.removeItem(TOKEN_KEY);
+    setCurrentUser(null);
+    setStudents([]);
+    setStudentForm(null);
+    setStudentBusy(false);
+    setBusyStudentId(null);
+    setNotice("Sua sessão expirou. Entre novamente.");
+    history.replace("/", { openLogin: true, from: "/alunos" });
+  }, [history]);
+  useEffect(() => {
+    if (!currentUser || location.pathname !== "/alunos") return;
+    const controller = new AbortController();
+    async function loadStudents() {
+      setStudentsLoading(true);
+      setStudentsError("");
+      try {
+        const items = await api.getStudents(
+          localStorage.getItem(TOKEN_KEY),
+          controller.signal,
+        );
+        if (!controller.signal.aborted) setStudents(items);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        if (error.status === 401) expireSession();
+        else setStudentsError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setStudentsLoading(false);
+      }
+    }
+    loadStudents();
+    return () => controller.abort();
+  }, [currentUser, location.pathname, studentsRetry, expireSession]);
+  const saveStudent = async (values, student = studentForm?.student) => {
+    if (studentRequest.current) return;
+    const controller = new AbortController();
+    studentRequest.current = controller;
+    setStudentBusy(true);
+    setBusyStudentId(student?._id || null);
+    setStudentError("");
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      const saved = student
+        ? await api.updateStudent(student._id, values, token, controller.signal)
+        : await api.createStudent(values, token, controller.signal);
+      if (controller.signal.aborted) return;
+      setStudents((items) =>
+        student
+          ? items.map((item) => (item._id === saved._id ? saved : item))
+          : [saved, ...items],
+      );
+      setStudentForm(null);
+      setNotice("Dados do aluno salvos.");
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      if (error.status === 401) expireSession();
+      else setStudentError(error.message);
+    } finally {
+      if (studentRequest.current === controller) {
+        studentRequest.current = null;
+        setStudentBusy(false);
+        setBusyStudentId(null);
+      }
+    }
+  };
   const activeMode = authMode || (location.state?.openLogin ? "login" : null);
   useEffect(() => {
     const controller = new AbortController();
@@ -125,6 +203,13 @@ function Application() {
     }
   };
   const signOut = () => {
+    studentRequest.current?.abort();
+    studentRequest.current = null;
+    setStudents([]);
+    setStudentForm(null);
+    setStudentError("");
+    setStudentBusy(false);
+    setBusyStudentId(null);
     localStorage.removeItem(TOKEN_KEY);
     setCurrentUser(null);
     setAuthMode(null);
@@ -187,28 +272,58 @@ function Application() {
           </div>
         </header>
         <main className="area-profissional__conteudo" id="conteudo">
-          <div className="cabecalho-pagina">
-            <div>
-              <h1>
-                {location.pathname === "/painel"
-                  ? "Olá, " + currentUser?.name
-                  : pages[location.pathname]}
-              </h1>
-              <p>
-                {location.pathname === "/painel"
-                  ? "Você está conectado à sua conta."
-                  : "Esta área estará disponível em breve."}
-              </p>
-            </div>
-          </div>
-          <section className="secao estado-vazio">
-            <Icon name="calendar" size={32} />
-            <h2>Estamos preparando seu espaço</h2>
-            <p>
-              O acesso à conta já está disponível. Alunos, agenda e locais serão
-              liberados em breve.
-            </p>
-          </section>
+          {location.pathname === "/alunos" ? (
+            <>
+              {!studentForm && studentError && (
+                <p className="formulario__erro" role="alert">
+                  {studentError}
+                </p>
+              )}
+              <Students
+                students={students}
+                loading={studentsLoading}
+                error={studentsError}
+                busyId={busyStudentId}
+                onRetry={() => setStudentsRetry((value) => value + 1)}
+                onNew={() => {
+                  setStudentError("");
+                  setStudentForm({ student: null });
+                }}
+                onEdit={(student) => {
+                  setStudentError("");
+                  setStudentForm({ student });
+                }}
+                onToggle={(student) =>
+                  saveStudent({ active: !student.active }, student)
+                }
+              />
+            </>
+          ) : (
+            <>
+              <div className="cabecalho-pagina">
+                <div>
+                  <h1>
+                    {location.pathname === "/painel"
+                      ? "Olá, " + currentUser?.name
+                      : pages[location.pathname]}
+                  </h1>
+                  <p>
+                    {location.pathname === "/painel"
+                      ? "Você está conectado à sua conta."
+                      : "Esta área estará disponível em breve."}
+                  </p>
+                </div>
+              </div>
+              <section className="secao estado-vazio">
+                <Icon name="calendar" size={32} />
+                <h2>Estamos preparando seu espaço</h2>
+                <p>
+                  A gestão de alunos já está disponível no menu. Agenda e locais
+                  serão liberados em breve.
+                </p>
+              </section>
+            </>
+          )}
           <footer className="area-profissional__rodape">
             <span>ProfissionalHub · Sua rotina em equilíbrio.</span>
           </footer>
@@ -247,6 +362,21 @@ function Application() {
           </main>
         </Route>
       </Switch>
+      {studentForm && currentUser && (
+        <StudentForm
+          key={studentForm.student?._id || "new"}
+          student={studentForm.student}
+          busy={studentBusy}
+          error={studentError}
+          onSave={saveStudent}
+          onClose={() => {
+            if (!studentRequest.current) {
+              setStudentForm(null);
+              setStudentError("");
+            }
+          }}
+        />
+      )}
       {activeMode && !currentUser && (
         <AuthModal
           mode={activeMode}

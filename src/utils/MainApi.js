@@ -38,3 +38,20 @@ export const signin = (values) =>
   request("/signin", { method: "POST", body: JSON.stringify(values) });
 export const getCurrentUser = (token, signal) =>
   request("/users/me", { token, signal });
+
+export const getStudents = (token, signal) =>
+  request("/students", { token, signal });
+export const createStudent = (values, token, signal) =>
+  request("/students", {
+    method: "POST",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });
+export const updateStudent = (id, values, token, signal) =>
+  request("/students/" + encodeURIComponent(id), {
+    method: "PATCH",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });

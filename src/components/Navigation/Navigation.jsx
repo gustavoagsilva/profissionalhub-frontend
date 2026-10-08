@@ -71,12 +71,13 @@ export default function Navigation({ onSignOut, open, onClose }) {
             <small>Minha conta</small>
           </div>
           <button
-            className="botao-icone"
+            className="botao-texto menu-lateral__sair"
             aria-label="Sair da conta"
             title="Sair"
             onClick={onSignOut}
           >
             <Icon name="logout" size={18} />
+            <span>Sair</span>
           </button>
         </div>
       </aside>
