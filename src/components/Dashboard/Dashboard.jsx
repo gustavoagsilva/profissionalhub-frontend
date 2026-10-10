@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { TODAY, initials } from "../../utils/formatters";
+import { initials } from "../../utils/formatters";
 import Icon from "../Icon/Icon";
 import "./Dashboard.css";
+import { todayInBrasilia } from "../../utils/sessionTime";
 
 const sessionStatus = {
   scheduled: { label: "Agendada", color: "neutra" },
@@ -10,10 +11,11 @@ const sessionStatus = {
 };
 
 export default function Dashboard({ students, sessions, onNewSession }) {
+  const today = todayInBrasilia();
   const activeStudents = students.filter((student) => student.active);
   const todaySessions = sessions
     .filter(
-      (session) => session.date === TODAY && session.status !== "cancelled",
+      (session) => session.date === today && session.status !== "cancelled",
     )
     .sort((first, second) => first.time.localeCompare(second.time));
 
@@ -46,7 +48,7 @@ export default function Dashboard({ students, sessions, onNewSession }) {
           <div>
             <h2>Atendimentos de hoje</h2>
             <p>
-              {new Date(TODAY + "T12:00:00").toLocaleDateString("pt-BR", {
+              {new Date(today + "T12:00:00").toLocaleDateString("pt-BR", {
                 day: "numeric",
                 month: "long",
               })}
@@ -60,12 +62,12 @@ export default function Dashboard({ students, sessions, onNewSession }) {
         <div className="painel__atendimentos">
           {todaySessions.map((session) => {
             const student = students.find(
-              (item) => item.id === session.studentId,
+              (item) => item._id === session.studentId,
             );
             const status = sessionStatus[session.status];
 
             return (
-              <div className="atendimento-resumido" key={session.id}>
+              <div className="atendimento-resumido" key={session._id}>
                 <div className="atendimento-resumido__horario">
                   <strong>{session.time}</strong>
                   <small>até {session.end}</small>

@@ -1,7 +1,7 @@
-import { useState } from "react";
 import Icon from "../Icon/Icon";
-import { TODAY, initials } from "../../utils/formatters";
+import { initials } from "../../utils/formatters";
 import "./Agenda.css";
+import { todayInBrasilia, sessionInstant } from "../../utils/sessionTime";
 const labels = {
   scheduled: "Agendada",
   completed: "Realizada",
@@ -15,15 +15,23 @@ const statusClasses = {
   cancelled: "cancelado",
 };
 
-export default function Agenda({ sessions, students, onNew, onStatus }) {
-  const [date, setDate] = useState(TODAY);
+export default function Agenda({
+  sessions,
+  students,
+  onNew,
+  onStatus,
+  onEdit,
+  date,
+  setDate,
+  now,
+}) {
   const rows = sessions
     .filter((session) => session.date === date)
     .sort((a, b) => a.time.localeCompare(b.time));
   const changeDay = (offset) => {
-    const next = new Date(date + "T12:00:00");
-    next.setDate(next.getDate() + offset);
-    setDate(next.toLocaleDateString("en-CA"));
+    const next = new Date(date + "T12:00:00Z");
+    next.setUTCDate(next.getUTCDate() + offset);
+    setDate(next.toISOString().slice(0, 10));
   };
   return (
     <>
@@ -31,7 +39,9 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
         <div>
           <span className="chamada">UM ATENDIMENTO DE CADA VEZ</span>
           <h1>Sua agenda</h1>
-          <p>Horários, lugares e pessoas em sintonia.</p>
+          <p>
+            Horários de Brasília. Intervalo mínimo de 45 minutos entre aulas.
+          </p>
         </div>
         <button className="botao botao--principal" onClick={() => onNew(date)}>
           <Icon name="plus" size={17} />
@@ -66,7 +76,7 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
             </button>
             <button
               className="botao botao--contorno botao--pequeno"
-              onClick={() => setDate(TODAY)}
+              onClick={() => setDate(todayInBrasilia())}
             >
               Hoje
             </button>
@@ -79,14 +89,14 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
           {rows.length ? (
             rows.map((session) => {
               const student = students.find(
-                (item) => item.id === session.studentId,
+                (item) => item._id === session.studentId,
               );
               return (
                 <article
                   className={
                     "atendimento atendimento--" + statusClasses[session.status]
                   }
-                  key={session.id}
+                  key={session._id}
                 >
                   <div className="atendimento__horario">
                     <strong>{session.time}</strong>
@@ -106,11 +116,6 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
                         <Icon name="pin" size={13} />
                         {session.location}
                       </p>
-                      {session.makeupId && (
-                        <span className="etiqueta etiqueta--verde">
-                          Reposição
-                        </span>
-                      )}
                     </div>
                     <span
                       className={
@@ -123,11 +128,31 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
                       }
                     >
                       {labels[session.status]}
+                      {session.status === "cancelled"
+                        ? session.cancelledBy === "student"
+                          ? " pelo aluno"
+                          : " pelo profissional"
+                        : ""}
                     </span>
-                    {session.status === "scheduled" && (
+                    {session.status !== "cancelled" && (
                       <div className="atendimento__acoes">
+                        {session.status === "scheduled" && (
+                          <button
+                            className="botao-texto"
+                            onClick={() => onEdit(session)}
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {sessionInstant(session.date, session.end) > now && (
+                          <small>Resultado disponível após o término.</small>
+                        )}
                         <button
                           className="botao botao--contorno botao--pequeno"
+                          disabled={
+                            session.status === "completed" ||
+                            sessionInstant(session.date, session.end) > now
+                          }
                           onClick={() => onStatus(session, "completed")}
                         >
                           <Icon name="check" size={14} />
@@ -135,16 +160,22 @@ export default function Agenda({ sessions, students, onNew, onStatus }) {
                         </button>
                         <button
                           className="botao-texto"
+                          disabled={
+                            session.status === "missed" ||
+                            sessionInstant(session.date, session.end) > now
+                          }
                           onClick={() => onStatus(session, "missed")}
                         >
                           Falta
                         </button>
-                        <button
-                          className="botao-texto"
-                          onClick={() => onStatus(session, "cancelled")}
-                        >
-                          Cancelar
-                        </button>
+                        {session.status === "scheduled" && (
+                          <button
+                            className="botao-texto"
+                            onClick={() => onStatus(session, "cancelled")}
+                          >
+                            Cancelar
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

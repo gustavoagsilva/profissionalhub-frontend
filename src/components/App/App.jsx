@@ -10,6 +10,11 @@ import {
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import * as api from "../../utils/MainApi";
 import { initials } from "../../utils/formatters";
+import Agenda from "../Agenda/Agenda";
+import Dashboard from "../Dashboard/Dashboard";
+import SessionForm from "../SessionForm/SessionForm";
+import SessionResult from "../SessionResult/SessionResult";
+import { todayInBrasilia } from "../../utils/sessionTime";
 import Students from "../Students/Students";
 import StudentForm from "../StudentForm/StudentForm";
 import Main from "../Main/Main";
@@ -48,7 +53,29 @@ function Application() {
   const [studentBusy, setStudentBusy] = useState(false);
   const [busyStudentId, setBusyStudentId] = useState(null);
   const studentRequest = useRef(null);
+  const [sessions, setSessions] = useState([]);
+  const [savedLocations, setSavedLocations] = useState([]);
+  const [agendaLoading, setAgendaLoading] = useState(true);
+  const [agendaError, setAgendaError] = useState("");
+  const [agendaRetry, setAgendaRetry] = useState(0);
+  const [agendaDate, setAgendaDate] = useState(todayInBrasilia);
+  const [sessionDialog, setSessionDialog] = useState(null);
+  const [scheduleError, setScheduleError] = useState("");
+  const [scheduleBusy, setScheduleBusy] = useState(false);
+  const scheduleRequest = useRef(null);
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
   const expireSession = useCallback(() => {
+    scheduleRequest.current?.abort();
+    scheduleRequest.current = null;
+    setSessions([]);
+    setSavedLocations([]);
+    setSessionDialog(null);
+    setScheduleBusy(false);
+    setScheduleError("");
     studentRequest.current?.abort();
     studentRequest.current = null;
     localStorage.removeItem(TOKEN_KEY);
@@ -58,7 +85,7 @@ function Application() {
     setStudentBusy(false);
     setBusyStudentId(null);
     setNotice("Sua sessão expirou. Entre novamente.");
-    history.replace("/", { openLogin: true, from: "/alunos" });
+    history.replace("/", { openLogin: true, from: history.location.pathname });
   }, [history]);
   useEffect(() => {
     if (!currentUser || location.pathname !== "/alunos") return;
@@ -83,6 +110,95 @@ function Application() {
     loadStudents();
     return () => controller.abort();
   }, [currentUser, location.pathname, studentsRetry, expireSession]);
+  useEffect(() => {
+    if (!currentUser || !["/agenda", "/painel"].includes(location.pathname))
+      return;
+    const controller = new AbortController();
+    async function loadAgenda() {
+      setAgendaLoading(true);
+      setAgendaError("");
+      try {
+        const token = localStorage.getItem(TOKEN_KEY);
+        const [appointments, pupils, places] = await Promise.all([
+          api.getSessions(token, controller.signal),
+          api.getStudents(token, controller.signal),
+          api.getLocations(token, controller.signal),
+        ]);
+        if (controller.signal.aborted) return;
+        setSessions(appointments);
+        setStudents(pupils);
+        setSavedLocations(places);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        if (error.status === 401) expireSession();
+        else setAgendaError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setAgendaLoading(false);
+      }
+    }
+    loadAgenda();
+    return () => controller.abort();
+  }, [currentUser, location.pathname, agendaRetry, expireSession]);
+  const openSession = (
+    date = todayInBrasilia(),
+    session = null,
+    status = null,
+  ) => {
+    setScheduleError("");
+    setSessionDialog({ date, session, status });
+  };
+  const closeSession = () => {
+    if (!scheduleRequest.current) {
+      setSessionDialog(null);
+      setScheduleError("");
+    }
+  };
+  const saveSession = async (values) => {
+    if (scheduleRequest.current) return;
+    const controller = new AbortController();
+    scheduleRequest.current = controller;
+    setScheduleBusy(true);
+    setScheduleError("");
+    const { session, status } = sessionDialog;
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      let saved;
+      if (status)
+        saved = await api.updateSessionStatus(
+          session._id,
+          values,
+          token,
+          controller.signal,
+        );
+      else if (session)
+        saved = await api.updateSession(
+          session._id,
+          values,
+          token,
+          controller.signal,
+        );
+      else saved = await api.createSession(values, token, controller.signal);
+      if (controller.signal.aborted) return;
+      setSessions((items) =>
+        session
+          ? items.map((item) => (item._id === saved._id ? saved : item))
+          : [...items, saved],
+      );
+      setAgendaDate(saved.date);
+      setSessionDialog(null);
+      setNotice(status ? "Resultado registrado." : "Atendimento salvo.");
+      if (location.pathname !== "/agenda") history.push("/agenda");
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      if (error.status === 401) expireSession();
+      else setScheduleError(error.message);
+    } finally {
+      if (scheduleRequest.current === controller) {
+        scheduleRequest.current = null;
+        setScheduleBusy(false);
+      }
+    }
+  };
   const saveStudent = async (values, student = studentForm?.student) => {
     if (studentRequest.current) return;
     const controller = new AbortController();
@@ -203,6 +319,13 @@ function Application() {
     }
   };
   const signOut = () => {
+    scheduleRequest.current?.abort();
+    scheduleRequest.current = null;
+    setSessions([]);
+    setSavedLocations([]);
+    setSessionDialog(null);
+    setScheduleBusy(false);
+    setScheduleError("");
     studentRequest.current?.abort();
     studentRequest.current = null;
     setStudents([]);
@@ -264,6 +387,7 @@ function Application() {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
+                timeZone: "America/Sao_Paulo",
               })}
             </span>
             <span className="avatar avatar--salvia">
@@ -298,6 +422,41 @@ function Application() {
                 }
               />
             </>
+          ) : ["/agenda", "/painel"].includes(location.pathname) ? (
+            agendaLoading ? (
+              <Preloader label="Carregando sua agenda…" />
+            ) : agendaError ? (
+              <section className="secao estado-vazio">
+                <p className="formulario__erro" role="alert">
+                  {agendaError}
+                </p>
+                <button
+                  className="botao botao--contorno"
+                  onClick={() => setAgendaRetry((value) => value + 1)}
+                >
+                  Tentar novamente
+                </button>
+              </section>
+            ) : location.pathname === "/agenda" ? (
+              <Agenda
+                sessions={sessions}
+                students={students}
+                date={agendaDate}
+                setDate={setAgendaDate}
+                now={now}
+                onNew={(date) => openSession(date)}
+                onEdit={(session) => openSession(session.date, session)}
+                onStatus={(session, status) =>
+                  openSession(session.date, session, status)
+                }
+              />
+            ) : (
+              <Dashboard
+                sessions={sessions}
+                students={students}
+                onNewSession={() => openSession()}
+              />
+            )
           ) : (
             <>
               <div className="cabecalho-pagina">
@@ -318,8 +477,8 @@ function Application() {
                 <Icon name="calendar" size={32} />
                 <h2>Estamos preparando seu espaço</h2>
                 <p>
-                  A gestão de alunos já está disponível no menu. Agenda e locais
-                  serão liberados em breve.
+                  Alunos e agenda já estão disponíveis no menu. A busca de
+                  locais será liberada em breve.
                 </p>
               </section>
             </>
@@ -362,6 +521,36 @@ function Application() {
           </main>
         </Route>
       </Switch>
+      {sessionDialog &&
+        currentUser &&
+        (sessionDialog.status ? (
+          <SessionResult
+            key={sessionDialog.session._id + sessionDialog.status}
+            session={sessionDialog.session}
+            status={sessionDialog.status}
+            studentName={
+              students.find(
+                (item) => item._id === sessionDialog.session.studentId,
+              )?.name || "Aluno"
+            }
+            busy={scheduleBusy}
+            error={scheduleError}
+            onClose={closeSession}
+            onSave={saveSession}
+          />
+        ) : (
+          <SessionForm
+            key={sessionDialog.session?._id || "new"}
+            session={sessionDialog.session}
+            date={sessionDialog.date}
+            students={students}
+            locations={savedLocations}
+            busy={scheduleBusy}
+            error={scheduleError}
+            onClose={closeSession}
+            onSave={saveSession}
+          />
+        ))}
       {studentForm && currentUser && (
         <StudentForm
           key={studentForm.student?._id || "new"}

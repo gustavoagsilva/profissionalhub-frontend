@@ -55,3 +55,29 @@ export const updateStudent = (id, values, token, signal) =>
     token,
     signal,
   });
+
+export const getSessions = (token, signal) =>
+  request("/sessions", { token, signal });
+export const getLocations = (token, signal) =>
+  request("/locations", { token, signal });
+export const createSession = (values, token, signal) =>
+  request("/sessions", {
+    method: "POST",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });
+export const updateSession = (id, values, token, signal) =>
+  request("/sessions/" + encodeURIComponent(id), {
+    method: "PATCH",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });
+export const updateSessionStatus = (id, values, token, signal) =>
+  request("/sessions/" + encodeURIComponent(id) + "/status", {
+    method: "PATCH",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });

@@ -121,3 +121,16 @@
     margin-top: 5px;
   }
 }
+
+.atendimento__acoes {
+  flex-wrap: wrap;
+}
+.atendimento__aluno h2,
+.atendimento__aluno p {
+  overflow-wrap: anywhere;
+}
+.atendimento__acoes small {
+  order: -1;
+  flex-basis: 100%;
+  color: var(--muted);
+}
