@@ -10,6 +10,8 @@ import {
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import * as api from "../../utils/MainApi";
 import { initials } from "../../utils/formatters";
+import Locations from "../Locations/Locations";
+import { findPlaces, calculateTravel } from "../../utils/ThirdPartyApi";
 import Agenda from "../Agenda/Agenda";
 import Dashboard from "../Dashboard/Dashboard";
 import SessionForm from "../SessionForm/SessionForm";
@@ -68,7 +70,17 @@ function Application() {
     const timer = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(timer);
   }, []);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsError, setLocationsError] = useState("");
+  const [locationsRetry, setLocationsRetry] = useState(0);
+  const [locationError, setLocationError] = useState("");
+  const [locationBusy, setLocationBusy] = useState(null);
+  const locationRequest = useRef(null);
   const expireSession = useCallback(() => {
+    locationRequest.current?.abort();
+    locationRequest.current = null;
+    setLocationBusy(null);
+    setLocationError("");
     scheduleRequest.current?.abort();
     scheduleRequest.current = null;
     setSessions([]);
@@ -199,6 +211,88 @@ function Application() {
       }
     }
   };
+  useEffect(() => {
+    if (!currentUser || location.pathname !== "/locais") return;
+    const controller = new AbortController();
+    async function loadLocations() {
+      setLocationsLoading(true);
+      setLocationsError("");
+      try {
+        const items = await api.getLocations(
+          localStorage.getItem(TOKEN_KEY),
+          controller.signal,
+        );
+        if (!controller.signal.aborted) setSavedLocations(items);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        if (error.status === 401) expireSession();
+        else setLocationsError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setLocationsLoading(false);
+      }
+    }
+    loadLocations();
+    return () => controller.abort();
+  }, [currentUser, location.pathname, locationsRetry, expireSession]);
+  const changeLocation = async (place, remove = false) => {
+    if (locationRequest.current) return;
+    if (!remove && savedLocations.some((item) => item.placeId === place.id))
+      return;
+    const controller = new AbortController();
+    locationRequest.current = controller;
+    setLocationBusy(remove ? place._id : place.id);
+    setLocationError("");
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (remove) {
+        await api.deleteLocation(place._id, token, controller.signal);
+        if (controller.signal.aborted) return;
+        setSavedLocations((items) =>
+          items.filter((item) => item._id !== place._id),
+        );
+      } else {
+        const saved = await api.createLocation(
+          {
+            name: place.name,
+            address: place.address,
+            category: place.category,
+            coordinates: place.coordinates,
+            placeId: place.id,
+          },
+          token,
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        setSavedLocations((items) =>
+          items.some((item) => item._id === saved._id)
+            ? items
+            : [saved, ...items],
+        );
+      }
+      setNotice(
+        remove
+          ? "Local removido. Os endereços dos atendimentos foram preservados."
+          : "Local salvo para seus atendimentos.",
+      );
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      if (error.status === 401) expireSession();
+      else {
+        setLocationError(
+          error.status === 409
+            ? "Este local já está salvo na sua conta."
+            : error.message,
+        );
+        if (error.status === 409 || error.status === 404)
+          setLocationsRetry((value) => value + 1);
+      }
+    } finally {
+      if (locationRequest.current === controller) {
+        locationRequest.current = null;
+        setLocationBusy(null);
+      }
+    }
+  };
   const saveStudent = async (values, student = studentForm?.student) => {
     if (studentRequest.current) return;
     const controller = new AbortController();
@@ -319,6 +413,10 @@ function Application() {
     }
   };
   const signOut = () => {
+    locationRequest.current?.abort();
+    locationRequest.current = null;
+    setLocationBusy(null);
+    setLocationError("");
     scheduleRequest.current?.abort();
     scheduleRequest.current = null;
     setSessions([]);
@@ -458,30 +556,18 @@ function Application() {
               />
             )
           ) : (
-            <>
-              <div className="cabecalho-pagina">
-                <div>
-                  <h1>
-                    {location.pathname === "/painel"
-                      ? "Olá, " + currentUser?.name
-                      : pages[location.pathname]}
-                  </h1>
-                  <p>
-                    {location.pathname === "/painel"
-                      ? "Você está conectado à sua conta."
-                      : "Esta área estará disponível em breve."}
-                  </p>
-                </div>
-              </div>
-              <section className="secao estado-vazio">
-                <Icon name="calendar" size={32} />
-                <h2>Estamos preparando seu espaço</h2>
-                <p>
-                  Alunos e agenda já estão disponíveis no menu. A busca de
-                  locais será liberada em breve.
-                </p>
-              </section>
-            </>
+            <Locations
+              saved={savedLocations}
+              savedLoading={locationsLoading}
+              savedError={locationsError}
+              mutationError={locationError}
+              busyId={locationBusy}
+              onRetry={() => setLocationsRetry((value) => value + 1)}
+              onSave={(place) => changeLocation(place)}
+              onRemove={(place) => changeLocation(place, true)}
+              onSearch={findPlaces}
+              onTravel={calculateTravel}
+            />
           )}
           <footer className="area-profissional__rodape">
             <span>ProfissionalHub · Sua rotina em equilíbrio.</span>

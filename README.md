@@ -1,6 +1,6 @@
 ﻿# ProfissionalHub — Frontend
 
-Aplicação para organizar a rotina de profissionais de Educação Física autônomos. A etapa atual conecta o frontend à autenticação, à gestão de alunos e à agenda da API própria.
+Aplicação para organizar a rotina de profissionais de Educação Física autônomos. A etapa atual conecta o frontend à autenticação, aos alunos, à agenda e aos locais salvos na API própria, com busca e cálculo de deslocamento pela Geoapify.
 
 ## Executar localmente
 
@@ -12,7 +12,7 @@ Validado com Node.js 24.15.0 e npm 11.12.1.
 4. Execute `npm run dev -- --port 5173` e abra o endereço informado. O backend precisa permitir essa origem em `ALLOWED_ORIGINS`.
 5. Reinicie o Vite após alterar o `.env`.
 
-O `.env` é ignorado pelo Git. As variáveis `VITE_` são públicas no frontend compilado: nunca coloque nelas a senha do MongoDB ou o segredo JWT. `VITE_GEOAPIFY_API_KEY` será usada quando a área de locais for conectada novamente; restrinja a chave por origem no fornecedor antes da publicação.
+O `.env` é ignorado pelo Git. As variáveis `VITE_` são públicas no frontend compilado: nunca coloque nelas a senha do MongoDB ou o segredo JWT. Configure `VITE_GEOAPIFY_API_KEY` para buscar locais e calcular deslocamentos. Restrinja a chave por origem no fornecedor antes da publicação. Sem a chave, a lista salva continua disponível e a busca informa a configuração ausente.
 
 ## Disponível nesta etapa
 
@@ -42,7 +42,7 @@ A API gratuita pode levar cerca de um minuto para responder no primeiro acesso.
 
 - Agenda diária com consulta por data, navegação entre dias e botão Hoje no horário de Brasília.
 - Cadastro de um atendimento por vez para um aluno ativo, com início, término e local.
-- Local escolhido entre os salvos na API ou informado como endereço/descrição livre. A busca Geoapify será integrada no próximo bloco.
+- Local escolhido entre os salvos na API ou informado como endereço/descrição livre.
 - Edição de aluno, data, horários e local de aulas agendadas, mantendo o horário futuro e o intervalo mínimo de 45 minutos. A API valida conflitos entre dias também.
 - Não permite agendar no passado, término anterior/igual ao início ou aula atravessando a meia-noite.
 - Registro manual de realização ou falta após o término. Esses dois resultados podem ser corrigidos entre si.
@@ -50,21 +50,31 @@ A API gratuita pode levar cerca de um minuto para responder no primeiro acesso.
 - Painel com total de alunos ativos, atendimentos de hoje (exceto cancelados), horários e resultados reais.
 - Carregamento, falha com nova tentativa, bloqueio de envio repetido e tratamento de sessão expirada.
 
-## Próximos blocos de integração
+## Explorar locais
 
-**A área Explorar locais ainda aguarda integração.** Os locais que já existem na API podem ser selecionados no agendamento. Não há registros fictícios nem salvamentos temporários.
+- Busca de academias, parques e centros esportivos em um raio de 15 km do centro de São Paulo, com até 18 resultados exibidos de três em três.
+- Seleção de dois resultados e cálculo estimado de distância e tempo de carro pela Geoapify. A estimativa não garante trânsito em tempo real nem altera automaticamente o intervalo da agenda.
+- Salvamento real por conta via POST /locations; lista persistente via GET /locations e remoção via DELETE /locations/:id.
+- A identificação da Geoapify (placeId) impede duplicações; o _id do MongoDB identifica a remoção e o local selecionado na agenda.
+- Um local só aparece como salvo após confirmação da API. Carregamentos e erros da busca são independentes dos locais já salvos.
+- Locais salvos ficam disponíveis no agendamento. Removê-los não altera o endereço dos atendimentos existentes; ao editar uma aula cujo local foi removido, o endereço é preservado como texto livre.
+- Requisições de busca/trajeto são canceladas ao sair da página. Sair da conta cancela as alterações pendentes no navegador e limpa a lista.
+
+## Pendências para entrega
+
+Revisão completa dos fluxos, publicação do frontend e validação no domínio definitivo. Não há registros fictícios nem salvamentos temporários.
 
 Pagamentos e reposições estão fora do escopo desta versão. Publicação do frontend e testes no domínio definitivo ainda estão pendentes.
 
 ## Rotas
 
-| Rota      | Estado atual                     |
-| --------- | -------------------------------- |
-| `/`       | Apresentação e autenticação      |
-| `/painel` | Resumo real de alunos e agenda   |
-| `/alunos` | Gestão de alunos integrada à API |
-| `/agenda` | Agendamento, edição e resultados |
-| `/locais` | Protegida, aguardando integração |
+| Rota      | Estado atual                        |
+| --------- | ----------------------------------- |
+| `/`       | Apresentação e autenticação         |
+| `/painel` | Resumo real de alunos e agenda      |
+| `/alunos` | Gestão de alunos integrada à API    |
+| `/agenda` | Agendamento, edição e resultados    |
+| `/locais` | Busca, deslocamento e locais salvos |
 
 O servidor de hospedagem do frontend deve redirecionar essas rotas para `index.html`. A autorização dos dados é responsabilidade do backend; o componente de proteção controla a navegação da interface.
 
@@ -81,9 +91,9 @@ O servidor de hospedagem do frontend deve redirecionar essas rotas para `index.h
 - `src/utils/studentPhone.js`: validação e apresentação do celular brasileiro.
 - `src/components/ProtectedRoute`: redirecionamento de visitantes sem sessão.
 - `src/contexts/CurrentUserContext.js`: perfil retornado pela API.
-- `src/utils/MainApi.js`: chamadas `fetch` de autenticação e operações de alunos e atendimentos, além da consulta de locais salvos.
+- `src/utils/MainApi.js`: chamadas `fetch` de autenticação e operações de alunos e atendimentos, além da listagem, criação e remoção de locais salvos.
 - `src/utils/formatters.js`: formatação de nomes, datas e valores, sem dados fictícios.
-- `src/utils/ThirdPartyApi.js`: integração Geoapify preservada para o próximo bloco.
+- `src/utils/ThirdPartyApi.js`: busca GET /v2/places e cálculo POST /v1/routematrix na Geoapify.
 
 React, React Router 5, Vite, CSS com BEM, normalize.css e fonte Manrope local com `@font-face`.
 
@@ -99,7 +109,9 @@ A integração de alunos foi verificada no navegador com Express e MongoDB locai
 
 A agenda foi testada com Express e MongoDB locais em banco isolado: agendamento, conflitos (44 minutos recusados e 45 aceitos), edição, local salvo/livre, cancelamento, correção de resultado, persistência, painel, fuso de Brasília e isolamento de contas. Foram simuladas falhas de carregamento e sessão expirada.
 
-As larguras de 320, 390 e 1440 px foram verificadas no painel, na listagem de alunos e na agenda. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
+Locais foram testados com Express e MongoDB locais: salvamento, persistência, duplicação, remoção, isolamento entre contas e preservação de endereço na agenda. Respostas controladas da Geoapify cobriram busca, paginação, rota, erro e nenhum resultado. A busca GET e o cálculo POST também passaram com a Geoapify real.
+
+As larguras de 320, 390 e 1440 px foram verificadas no painel, na listagem de alunos, na agenda e em Explorar locais. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
 
 ## Créditos
 

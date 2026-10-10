@@ -81,3 +81,17 @@ export const updateSessionStatus = (id, values, token, signal) =>
     token,
     signal,
   });
+
+export const createLocation = (values, token, signal) =>
+  request("/locations", {
+    method: "POST",
+    body: JSON.stringify(values),
+    token,
+    signal,
+  });
+export const deleteLocation = (id, token, signal) =>
+  request("/locations/" + encodeURIComponent(id), {
+    method: "DELETE",
+    token,
+    signal,
+  });

@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "../Icon/Icon";
 import Preloader from "../Preloader/Preloader";
-import { findPlaces, calculateTravel } from "../../utils/ThirdPartyApi";
 import "./Locations.css";
-export default function Locations({ saved, onSave }) {
+export default function Locations({
+  saved,
+  onSave,
+  onRemove,
+  onRetry,
+  savedLoading,
+  savedError,
+  mutationError,
+  busyId,
+  onSearch,
+  onTravel,
+}) {
   const [category, setCategory] = useState("sport.fitness");
   const [results, setResults] = useState(null);
   const [visible, setVisible] = useState(3);
@@ -37,7 +47,7 @@ export default function Locations({ saved, onSave }) {
     setTravelError("");
     setVisible(3);
     try {
-      const places = await findPlaces(category, controller.signal);
+      const places = await onSearch(category, controller.signal);
       if (!controller.signal.aborted) setResults(places);
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
@@ -63,9 +73,10 @@ export default function Locations({ saved, onSave }) {
     const controller = new AbortController();
     travelController.current = controller;
     setTravelLoading(true);
+    setTravel(null);
     setTravelError("");
     try {
-      const result = await calculateTravel(
+      const result = await onTravel(
         selected[0],
         selected[1],
         controller.signal,
@@ -106,6 +117,7 @@ export default function Locations({ saved, onSave }) {
             id="category"
             className="entrada"
             value={category}
+            disabled={loading}
             onChange={(event) => setCategory(event.target.value)}
           >
             <option value="sport.fitness">Academias e espaços fitness</option>
@@ -118,6 +130,12 @@ export default function Locations({ saved, onSave }) {
           </button>
         </form>
       </section>
+      {mutationError && (
+        <p className="formulario__erro" role="alert">
+          {mutationError}
+        </p>
+      )}
+      {busyId && <p role="status">Atualizando seus locais…</p>}
       {loading && <Preloader />}
       {error && (
         <p className="formulario__erro" role="alert">
@@ -141,7 +159,9 @@ export default function Locations({ saved, onSave }) {
               <div className="lista-locais">
                 {results.slice(0, visible).map((place) => {
                   const checked = selected.some((item) => item.id === place.id);
-                  const isSaved = saved.some((item) => item.id === place.id);
+                  const isSaved = saved.some(
+                    (item) => item.placeId === place.id,
+                  );
                   return (
                     <article className="local" key={place.id}>
                       <div className="local__visual">
@@ -172,11 +192,20 @@ export default function Locations({ saved, onSave }) {
                         </label>
                         <button
                           className="botao botao--contorno botao--largura-total botao--pequeno"
-                          disabled={isSaved}
+                          disabled={
+                            isSaved ||
+                            Boolean(busyId) ||
+                            savedLoading ||
+                            Boolean(savedError)
+                          }
                           onClick={() => onSave(place)}
                         >
                           <Icon name={isSaved ? "check" : "plus"} size={15} />
-                          {isSaved ? "Local salvo" : "Salvar local"}
+                          {busyId === place.id
+                            ? "Salvando…"
+                            : isSaved
+                              ? "Local salvo"
+                              : "Salvar local"}
                         </button>
                       </div>
                     </article>
@@ -240,20 +269,50 @@ export default function Locations({ saved, onSave }) {
         <h2>Meus locais de atendimento</h2>
         <span>Seus espaços de atendimento</span>
       </div>
-      <div className="locais-salvos">
-        {saved.map((place) => (
-          <article className="local-salvo" key={place.id}>
-            <span className="avatar avatar--salvia">
-              <Icon name={place.icon || "pin"} size={20} />
-            </span>
-            <div>
-              <h3>{place.name}</h3>
-              <p>{place.address}</p>
-            </div>
-            <Icon name="check" size={17} />
-          </article>
-        ))}
-      </div>
+      {savedLoading ? (
+        <Preloader label="Carregando locais salvos…" />
+      ) : savedError ? (
+        <div className="estado-vazio">
+          <p className="formulario__erro" role="alert">
+            {savedError}
+          </p>
+          <button className="botao botao--contorno" onClick={onRetry}>
+            Tentar novamente
+          </button>
+        </div>
+      ) : (
+        <div className="locais-salvos">
+          {!saved.length && (
+            <p className="estado-vazio">
+              Você ainda não salvou locais. Faça uma busca e escolha seus
+              espaços de atendimento.
+            </p>
+          )}
+          {saved.map((place) => (
+            <article className="local-salvo" key={place._id}>
+              <span className="avatar avatar--salvia">
+                <Icon name={place.icon || "pin"} size={20} />
+              </span>
+              <div>
+                <h3>{place.name}</h3>
+                <p>{place.address}</p>
+              </div>
+              <button
+                className="botao-texto"
+                disabled={Boolean(busyId)}
+                aria-label={"Remover " + place.name}
+                onClick={() => onRemove(place)}
+              >
+                {busyId === place._id ? "Removendo…" : "Remover"}
+              </button>
+            </article>
+          ))}
+        </div>
+      )}
+      <p className="locais__creditos">
+        Remover um local salvo não apaga o endereço dos atendimentos já
+        registrados.
+      </p>
       <p className="locais__creditos">
         Powered by{" "}
         <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">

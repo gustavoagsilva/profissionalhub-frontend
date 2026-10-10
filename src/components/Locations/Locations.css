@@ -200,3 +200,15 @@
     gap: 8px;
   }
 }
+
+.local-salvo {
+  flex-wrap: wrap;
+}
+.local-salvo > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.local__conteudo h3,
+.local__conteudo p {
+  overflow-wrap: anywhere;
+}
