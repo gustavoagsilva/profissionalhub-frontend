@@ -62,7 +62,7 @@ A API gratuita pode levar cerca de um minuto para responder no primeiro acesso.
 
 ## Pendências para entrega
 
-Revisão completa dos fluxos, publicação do frontend e validação no domínio definitivo. Não há registros fictícios nem salvamentos temporários.
+Publicação do frontend e validação no domínio definitivo. A revisão local dos fluxos foi concluída em 10/10/2026. Não há registros fictícios nem salvamentos temporários.
 
 Pagamentos e reposições estão fora do escopo desta versão. Publicação do frontend e testes no domínio definitivo ainda estão pendentes.
 
@@ -92,7 +92,7 @@ O servidor de hospedagem do frontend deve redirecionar essas rotas para `index.h
 - `src/components/ProtectedRoute`: redirecionamento de visitantes sem sessão.
 - `src/contexts/CurrentUserContext.js`: perfil retornado pela API.
 - `src/utils/MainApi.js`: chamadas `fetch` de autenticação e operações de alunos e atendimentos, além da listagem, criação e remoção de locais salvos.
-- `src/utils/formatters.js`: formatação de nomes, datas e valores, sem dados fictícios.
+- `src/utils/formatters.js`: iniciais dos nomes exibidas nos avatares.
 - `src/utils/ThirdPartyApi.js`: busca GET /v2/places e cálculo POST /v1/routematrix na Geoapify.
 
 React, React Router 5, Vite, CSS com BEM, normalize.css e fonte Manrope local com `@font-face`.
@@ -112,6 +112,12 @@ A agenda foi testada com Express e MongoDB locais em banco isolado: agendamento,
 Locais foram testados com Express e MongoDB locais: salvamento, persistência, duplicação, remoção, isolamento entre contas e preservação de endereço na agenda. Respostas controladas da Geoapify cobriram busca, paginação, rota, erro e nenhum resultado. A busca GET e o cálculo POST também passaram com a Geoapify real.
 
 As larguras de 320, 390 e 1440 px foram verificadas no painel, na listagem de alunos, na agenda e em Explorar locais. Testes completos no frontend publicado ainda estão pendentes. Os scripts de validação ficam fora do repositório; não há comando `npm test` configurado.
+
+## Revisão local de 10/10/2026
+
+Foram repetidos os testes integrados de alunos, agenda e locais com Express e MongoDB em banco isolado. Testes de navegador verificaram autenticação, falhas temporárias, sessão expirada, navegação direta e páginas em 320, 390, 768 e 1440 px. A validação em domínio publicado ainda precisa ser realizada após o deploy.
+
+Correções da revisão: sincronização da sessão entre abas (a aba é recarregada ao trocar o token ou sair em outra aba), fechamento do menu móvel por Escape e destino do atalho de conteúdo na página 404. O formulário antigo EntryForm e funções de formatação sem uso foram removidos. Arquivos .env, dependências instaladas, builds e logs permanecem fora do Git.
 
 ## Créditos
 

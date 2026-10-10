@@ -70,6 +70,25 @@ function Application() {
     const timer = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(timer);
   }, []);
+  useEffect(() => {
+    const syncSession = (event) => {
+      if (
+        event.storageArea === localStorage &&
+        (event.key === TOKEN_KEY || event.key === null)
+      ) {
+        window.location.reload();
+      }
+    };
+    const closeMenu = (event) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("storage", syncSession);
+    window.addEventListener("keydown", closeMenu);
+    return () => {
+      window.removeEventListener("storage", syncSession);
+      window.removeEventListener("keydown", closeMenu);
+    };
+  }, []);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState("");
   const [locationsRetry, setLocationsRetry] = useState(0);
@@ -96,6 +115,10 @@ function Application() {
     setStudentForm(null);
     setStudentBusy(false);
     setBusyStudentId(null);
+    setStudentError("");
+    setMobileOpen(false);
+    setAuthError("");
+    setAuthMode(null);
     setNotice("Sua sessão expirou. Entre novamente.");
     history.replace("/", { openLogin: true, from: history.location.pathname });
   }, [history]);
@@ -596,7 +619,7 @@ function Application() {
           {workspace}
         </ProtectedRoute>
         <Route>
-          <main className="pagina-nao-encontrada">
+          <main className="pagina-nao-encontrada" id="conteudo">
             <h1>Esse caminho ainda não existe.</h1>
             <Link
               className="botao botao--principal"
