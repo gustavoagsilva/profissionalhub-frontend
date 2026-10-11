@@ -1,0 +1,16 @@
+.telefone-aluno {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.telefone-aluno__prefixo {
+  flex: none;
+  font-weight: 600;
+}
+.telefone-aluno .entrada {
+  min-width: 0;
+}
+.entrada[readonly] {
+  background: var(--sage);
+  color: var(--muted);
+}

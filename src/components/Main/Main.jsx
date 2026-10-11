@@ -3,7 +3,7 @@ import Header from "../Header/Header";
 import About from "../About/About";
 import Footer from "../Footer/Footer";
 import "./Main.css";
-export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
+export default function Main({ onLogin, onRegister, onSignOut }) {
   return (
     <div className="apresentacao">
       <Header onLogin={onLogin} onRegister={onRegister} onSignOut={onSignOut} />
@@ -29,9 +29,6 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
                 Organizar minha rotina
                 <Icon name="arrow" size={18} />
               </button>
-              <button className="botao botao--simples" onClick={onDemo}>
-                Explorar demonstração
-              </button>
             </div>
             <div className="destaque__nota">
               <Icon name="check" size={16} />
@@ -55,56 +52,29 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
                   </h2>
                 </div>
               </div>
-              <div className="previa__resumos">
-                <div>
-                  <span>Atendimentos hoje</span>
-                  <strong>
-                    04<small> sessões</small>
-                  </strong>
-                </div>
-                <div>
-                  <span>Alunos ativos</span>
-                  <strong>
-                    12<small> alunos</small>
-                  </strong>
-                </div>
-              </div>
-              <div className="previa__agenda">
-                <span>Na sua agenda</span>
-                <span>Exemplo ilustrativo</span>
-              </div>
               {[
                 {
-                  time: "07:00",
-                  name: "Mariana Costa",
-                  location: "Parque Ibirapuera",
-                  done: true,
+                  icon: "users",
+                  title: "Alunos",
+                  text: "Contatos e objetivos por perto",
                 },
                 {
-                  time: "09:00",
-                  name: "Rafael Oliveira",
-                  location: "Studio Vila Mariana",
+                  icon: "calendar",
+                  title: "Agenda",
+                  text: "Horários organizados em um só lugar",
                 },
                 {
-                  time: "14:00",
-                  name: "Camila Santos",
-                  location: "Parque Ibirapuera",
+                  icon: "pin",
+                  title: "Locais",
+                  text: "Encontre espaços para atender",
                 },
               ].map((item) => (
-                <div className="previa__atendimento" key={item.time}>
-                  <time>{item.time}</time>
+                <div className="previa__atendimento" key={item.title}>
+                  <Icon name={item.icon} size={24} />
                   <div>
-                    <strong>{item.name}</strong>
-                    <span>{item.location}</span>
+                    <strong>{item.title}</strong>
+                    <span>{item.text}</span>
                   </div>
-                  <span
-                    className={
-                      "previa__indicador" +
-                      (item.done ? " previa__indicador--concluido" : "")
-                    }
-                  >
-                    <Icon name={item.done ? "check" : "clock"} size={15} />
-                  </span>
                 </div>
               ))}
             </div>
@@ -141,9 +111,9 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
                 text: "Encontre contatos e acompanhe quem faz parte da sua rotina.",
               },
               {
-                icon: "wallet",
-                title: "Pendências à vista",
-                text: "Organize cobranças e reposições para saber o que precisa de atenção.",
+                icon: "pin",
+                title: "Locais para atender",
+                text: "Encontre espaços próximos e planeje seus deslocamentos.",
               },
             ].map((item) => (
               <article className="recurso" key={item.title}>
@@ -156,7 +126,7 @@ export default function Main({ onLogin, onRegister, onDemo, onSignOut }) {
             ))}
           </div>
         </section>
-        <About onDemo={onDemo} />
+        <About onRegister={onRegister} />
       </main>
       <Footer />
     </div>

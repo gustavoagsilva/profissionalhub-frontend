@@ -38,7 +38,7 @@ export async function findPlaces(category, signal) {
     name: feature.properties.name || "Local sem nome",
     address: feature.properties.formatted,
     coordinates: feature.geometry.coordinates,
-    category: "Geoapify",
+    category,
     icon: "pin",
   }));
 }
